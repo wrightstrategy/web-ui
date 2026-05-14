@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wright Family · UI Design Directions</title>
+<link rel="stylesheet" href="shared/base.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  /* Hide artboard content from horizontal scrolling — they're previews not interactive */
+  .wf-root { contain: layout paint; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // Suppress the benign "ResizeObserver loop completed with undelivered
+  // notifications" warning. It's a browser-side throttle notice from the
+  // pan/zoom & DOM nesting in the canvas; never an actual bug.
+  (function () {
+    var isROLoop = function (msg) {
+      return typeof msg === 'string' && msg.indexOf('ResizeObserver loop') !== -1;
+    };
+
+    // 1. Debounce ResizeObserver callbacks into a rAF so the browser
+    //    doesn't emit the loop-overflow notice in the first place.
+    if (typeof ResizeObserver !== 'undefined') {
+      var RO = ResizeObserver;
+      window.ResizeObserver = function (cb) {
+        return new RO(function (entries, observer) {
+          window.requestAnimationFrame(function () {
+            try { cb(entries, observer); } catch (e) {
+              if (!isROLoop(e && e.message)) throw e;
+            }
+          });
+        });
+      };
+      window.ResizeObserver.prototype = RO.prototype;
+    }
+
+    // 2. Belt-and-braces: filter at every error reporting surface.
+    window.addEventListener('error', function (e) {
+      if (e && (isROLoop(e.message) || isROLoop(e && e.error && e.error.message))) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return true;
+      }
+    }, true);
+    var prevOnError = window.onerror;
+    window.onerror = function (msg, src, line, col, err) {
+      if (isROLoop(msg) || (err && isROLoop(err.message))) return true;
+      if (prevOnError) return prevOnError.apply(this, arguments);
+      return false;
+    };
+    var origErr = console.error;
+    console.error = function () {
+      var first = arguments[0];
+      if (isROLoop(typeof first === 'string' ? first : first && first.message)) return;
+      return origErr.apply(console, arguments);
+    };
+  })();
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="shared/icons.jsx"></script>
+<script type="text/babel" src="shared/screens.jsx"></script>
+<script type="text/babel" src="directions.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="Wright Family · UI Standard"
+      subtitle="Three Texas-coded design directions for the unified @wright/ui system. Sentinel + Paperless screens, desktop + mobile, dark hero + a light-theme proof per direction."
+    >
+      <DirectionSection
+        id="frontier"
+        dir={Frontier}
+        label="1 · Frontier"
+        summary="Safe pick · committed dusty Texas, restrained. Star only in the mark. Plex Sans + Mono. Active nav: small brick-red rail. Density matches today's tools."
+      />
+      <DirectionSection
+        id="lonestar"
+        dir={LoneStar}
+        label="2 · Lone Star"
+        summary="Confident pick · adds bluebonnet indigo as a second accent. Star earns its keep across the UI. Geist Sans + Mono. Slightly breathier density."
+      />
+      <DirectionSection
+        id="capitol"
+        dir={Capitol}
+        label="3 · Capitol"
+        summary="Bold pick · warm pink-granite navy with brick red + dusty granite gold. Editorial Plex Condensed display. Active nav is a full red pill. Star ornament features."
+      />
+    </DesignCanvas>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+/*
+ * @wright/ui · tokens.css
+ *
+ * Canonical semantic tokens for the Wright Family UI system.
+ * Paste this into packages/ui/src/lib/theme/tokens.css.
+ *
+ * The same names exist in dark (default) and light scopes. Components
+ * reference tokens only — never raw hex.
+ *
+ *   <html data-theme="dark">   default
+ *   <html data-theme="light">  inverted
+ *
+ * Last updated: 2026-05-14 · v1.0
+ */
+
+:root,
+[data-theme="dark"] {
+  /* --- Surface / text / border ----------------------------------- */
+  --bg:               #13171f;  /* page background           */
+  --surface:          #181d27;  /* card/main surface         */
+  --surface-raised:   #1f2531;  /* nested card / modal       */
+  --border:           #2a3142;
+  --border-strong:    #3a445a;
+
+  --text:             #ebe4d4;  /* primary content           */
+  --text-muted:       #8d95a6;  /* secondary content         */
+  --text-subtle:      #5d6477;  /* tertiary / metadata       */
+
+  /* --- Intent ---------------------------------------------------- */
+  --accent:           #c24b3a;  /* brick red — primary       */
+  --accent-soft:      #5d2a23;  /* accent tint / selection   */
+  --accent-on:        #f7ede0;  /* foreground on accent      */
+  --success:          #7fa370;
+  --warning:          #d4a14a;
+  --danger:           #c24b3a;
+  --info:             #5e83a8;
+
+  /* --- Style ----------------------------------------------------- */
+  --focus:            var(--accent);
+  --focus-ring:       0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+
+  --radius-sm:        6px;
+  --radius-md:        8px;
+  --radius-lg:        14px;
+
+  --shadow-sm:        0 1px 2px rgba(0, 0, 0, 0.45);
+  --shadow-md:        0 8px 24px rgba(0, 0, 0, 0.45),
+                      0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-lg:        0 24px 60px rgba(0, 0, 0, 0.55),
+                      0 2px 6px rgba(0, 0, 0, 0.30);
+
+  /* --- Type ------------------------------------------------------ */
+  --font-sans:        'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display:     'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono:        'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+
+  --text-display:     600 28px/1.20 var(--font-sans);
+  --text-h1:          600 22px/1.25 var(--font-sans);
+  --text-h2:          600 18px/1.30 var(--font-sans);
+  --text-h3:          600 15px/1.35 var(--font-sans);
+  --text-body:        450 14px/1.45 var(--font-sans);
+  --text-small:       450 12px/1.45 var(--font-sans);
+  --text-label:       500 11px/1.00 var(--font-mono);  /* + letter-spacing .16em + uppercase */
+  --text-mono:        500 12px/1.40 var(--font-mono);
+
+  /* --- Spacing · 4px scale --------------------------------------- */
+  --space-1:          4px;
+  --space-2:          8px;
+  --space-3:          12px;
+  --space-4:          16px;
+  --space-5:          20px;
+  --space-6:          24px;
+  --space-7:          32px;
+  --space-8:          40px;
+  --space-9:          48px;
+  --space-10:         64px;
+  --space-11:         80px;
+  --space-12:         96px;
+
+  /* --- Motion ---------------------------------------------------- */
+  --duration-fast:    120ms;
+  --duration-base:    180ms;
+  --duration-slow:    280ms;
+  --ease-out:         cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ease-in-out:      cubic-bezier(0.4, 0,   0.2, 1);
+
+  /* --- Chart-adjacent (deferred lib choice) ---------------------- */
+  --chart-axis:       #3a445a;
+  --chart-grid:       #2a3142;
+  --chart-tip-bg:     #1f2531;
+  --chart-tip-fg:     #ebe4d4;
+  --chart-1:          #c24b3a;   /* primary series        */
+  --chart-2:          #5e83a8;
+  --chart-3:          #d4a14a;
+  --chart-4:          #7fa370;
+  --chart-5:          #9b7ab0;
+  --chart-6:          #7c8693;
+
+  /* --- z-index --------------------------------------------------- */
+  --z-base:           0;
+  --z-sticky:         10;
+  --z-overlay:        100;   /* drawers, popovers          */
+  --z-modal:          200;
+  --z-toast:          300;
+}
+
+[data-theme="light"] {
+  --bg:               #f2ece0;
+  --surface:          #faf5e9;
+  --surface-raised:   #ffffff;
+  --border:           #e0d6c1;
+  --border-strong:    #c7b89a;
+
+  --text:             #1d1f25;
+  --text-muted:       #5a5e6a;
+  --text-subtle:      #8a8a91;
+
+  --accent:           #a83828;
+  --accent-soft:      rgba(168, 56, 40, 0.10);
+  --accent-on:        #ffffff;
+  --success:          #5a8550;
+  --warning:          #b78636;
+  --danger:           #a83828;
+  --info:             #3a6789;
+
+  --shadow-sm:        0 1px 2px rgba(30, 25, 20, 0.08);
+  --shadow-md:        0 8px 24px rgba(30, 25, 20, 0.10),
+                      0 2px 4px rgba(30, 25, 20, 0.06);
+  --shadow-lg:        0 24px 60px rgba(30, 25, 20, 0.18),
+                      0 2px 6px rgba(30, 25, 20, 0.10);
+
+  --chart-axis:       #c7b89a;
+  --chart-grid:       #e0d6c1;
+  --chart-tip-bg:     #ffffff;
+  --chart-tip-fg:     #1d1f25;
+  --chart-1:          #a83828;
+  --chart-2:          #3a6789;
+  --chart-3:          #b78636;
+  --chart-4:          #5a8550;
+  --chart-5:          #7a5c8c;
+  --chart-6:          #6a737e;
+}
+
+/* ------------------------------------------------------------------
+ * Print
+ *
+ * Drops dark surfaces in favour of paper-white, hides chrome, swaps
+ * type-system to ink. Used by Paperless export and Sentinel briefing
+ * PDFs.
+ * ------------------------------------------------------------------ */
+@media print {
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --bg:             #ffffff;
+    --surface:        #ffffff;
+    --surface-raised: #ffffff;
+    --text:           #111111;
+    --text-muted:     #4a4a4a;
+    --text-subtle:    #757575;
+    --border:         #d9d2c2;
+    --accent:         #a83828;
+    --shadow-sm:      none;
+    --shadow-md:      none;
+    --shadow-lg:      none;
+  }
+}
+
+/* ------------------------------------------------------------------
+ * Reduced motion · respect OS preference
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+  *, *::before, *::after {
+    animation-duration:   0ms !important;
+    transition-duration:  0ms !important;
+  }
+}

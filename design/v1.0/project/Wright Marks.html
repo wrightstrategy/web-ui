@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wright Family · W+Star Mark Exploration</title>
+<link rel="stylesheet" href="shared/base.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  .wf-root { contain: layout paint; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  // Same RO suppression as the main directions file.
+  (function () {
+    var isROLoop = function (msg) {
+      return typeof msg === 'string' && msg.indexOf('ResizeObserver loop') !== -1;
+    };
+    if (typeof ResizeObserver !== 'undefined') {
+      var RO = ResizeObserver;
+      window.ResizeObserver = function (cb) {
+        return new RO(function (entries, observer) {
+          window.requestAnimationFrame(function () {
+            try { cb(entries, observer); } catch (e) { if (!isROLoop(e && e.message)) throw e; }
+          });
+        });
+      };
+      window.ResizeObserver.prototype = RO.prototype;
+    }
+    window.addEventListener('error', function (e) {
+      if (e && (isROLoop(e.message) || isROLoop(e && e.error && e.error.message))) {
+        e.stopImmediatePropagation(); e.preventDefault(); return true;
+      }
+    }, true);
+    var origErr = console.error;
+    console.error = function () {
+      var first = arguments[0];
+      if (isROLoop(typeof first === 'string' ? first : first && first.message)) return;
+      return origErr.apply(console, arguments);
+    };
+  })();
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="shared/icons.jsx"></script>
+<script type="text/babel" src="marks.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="Wright Family · Mark Exploration"
+      subtitle="Six W+star marks, all in the Frontier palette (brick on bone, bone on brick). Each card shows the glyph in two colorways, a size scale from 16px favicon to 64px header, and the mark in its sidebar context. Pick one (or two to mash together) and I'll commit it across the system."
+    >
+      <DCSection id="marks" title="W + Star · 6 explorations" subtitle="Top-of-mind picks: Apex (subtle), Pierced (graphic), Slash (kinetic).">
+        {MARKS.map(m => (
+          <DCArtboard key={m.id} id={m.id} label={m.name} width={420} height={780}>
+            <MarkCard mark={m} />
+          </DCArtboard>
+        ))}
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+</body>
+</html>

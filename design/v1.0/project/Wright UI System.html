@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wright Family · UI System v0.1</title>
+<link rel="stylesheet" href="shared/base.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #f0eee9; }
+  .wf-root { contain: layout paint; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+  (function () {
+    var isROLoop = function (m) { return typeof m === 'string' && m.indexOf('ResizeObserver loop') !== -1; };
+    if (typeof ResizeObserver !== 'undefined') {
+      var RO = ResizeObserver;
+      window.ResizeObserver = function (cb) {
+        return new RO(function (entries, observer) {
+          window.requestAnimationFrame(function () {
+            try { cb(entries, observer); } catch (e) { if (!isROLoop(e && e.message)) throw e; }
+          });
+        });
+      };
+      window.ResizeObserver.prototype = RO.prototype;
+    }
+    window.addEventListener('error', function (e) {
+      if (e && (isROLoop(e.message) || isROLoop(e && e.error && e.error.message))) {
+        e.stopImmediatePropagation(); e.preventDefault(); return true;
+      }
+    }, true);
+    var origErr = console.error;
+    console.error = function () {
+      var first = arguments[0];
+      if (isROLoop(typeof first === 'string' ? first : first && first.message)) return;
+      return origErr.apply(console, arguments);
+    };
+  })();
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="shared/icons.jsx"></script>
+<script type="text/babel" src="shared/screens.jsx"></script>
+<script type="text/babel" src="marks.jsx"></script>
+<script type="text/babel" src="spec.jsx"></script>
+<script type="text/babel" src="recipes-v2.jsx"></script>
+<script type="text/babel" src="recipes-v3.jsx"></script>
+<script type="text/babel" src="polish.jsx"></script>
+<script type="text/babel" src="handoff.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas
+      title="Wright Family · UI System v0.1"
+      subtitle="Frontier palette · Stencil bar mark · 4 page recipes locked in. Pan to walk the spec; expand any artboard fullscreen. Brand · tokens · components · then the refreshed recipes. The Roadmap card at the end lists v0.2 work."
+    >
+      <DCSection id="brand" title="01 · Brand" subtitle="Stencil bar mark, wordmark, lockups, contexts, do's & don'ts.">
+        <DCArtboard id="brand-atlas" label="Brand atlas" width={1280} height={780}>
+          <BrandAtlas />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="tokens" title="02 · Tokens" subtitle="Semantic CSS custom properties — paste-ready for @wright/ui/tokens.css.">
+        <DCArtboard id="tokens-ref" label="Tokens · color, type, spacing" width={1280} height={1100}>
+          <TokenReference />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="components" title="03 · Components" subtitle="The 13 foundational components in their primary variants.">
+        <DCArtboard id="lib" label="Component library" width={1280} height={1500}>
+          <ComponentLibrary />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="recipes" title="04 · Page recipes" subtitle="Sentinel overview, Paperless queue, mobile dashboard, mobile detail — refreshed with the new mark.">
+        <DCArtboard id="sentinel" label="Sentinel · Overview" width={1280} height={860}>
+          <div className="wf-root theme-frontier">
+            <SentinelDashboard brand={<BrandStencil sub="Sentinel" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="paperless" label="Paperless · Queue" width={1280} height={860}>
+          <div className="wf-root theme-frontier">
+            <PaperlessTable brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="detail" label="Paperless · Detail (#207)" width={1280} height={900}>
+          <div className="wf-root theme-frontier">
+            <DetailPage brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="edit" label="Paperless · Edit form" width={1280} height={1080}>
+          <div className="wf-root theme-frontier">
+            <EditPage brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="settings" label="Paperless · Settings" width={1280} height={900}>
+          <div className="wf-root theme-frontier">
+            <SettingsPage brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="async" label="Sentinel · Async/job (briefing-morning)" width={1280} height={900}>
+          <div className="wf-root theme-frontier">
+            <AsyncJobPage brand={<BrandStencil sub="Sentinel" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="login" label="Login · default" width={1280} height={840}>
+          <div className="wf-root theme-frontier">
+            <LoginPage />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="login-err" label="Login · error state" width={1280} height={840}>
+          <div className="wf-root theme-frontier">
+            <LoginPage error />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="mobile-home" label="Mobile · Home" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileDashboard brand={<BrandStencil sub="Sentinel" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="mobile-detail" label="Mobile · Detail" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileDetail brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="mobile-form" label="Mobile · Edit form" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileForm brand={<BrandStencil sub="Paperless" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="mobile-triage" label="Mobile · Triage (scan-router)" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileTriage brand={<BrandStencil sub="Scan" />} />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="mobile-login" label="Mobile · Login" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileLogin />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="light" label="Sentinel · Light theme" width={1280} height={860}>
+          <div className="wf-root theme-frontier light">
+            <SentinelDashboard brand={<BrandStencil sub="Sentinel" />} />
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="states" title="05 · States" subtitle="Loading, empty, and error patterns for card · table · page surfaces.">
+        <DCArtboard id="states" label="States library" width={1280} height={780}>
+          <StatesLibrary />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="auth" title="06 · Auth conventions" subtitle="What the kit ships vs. what comes from the future SSO project.">
+        <DCArtboard id="auth-conv" label="Auth stub conventions" width={1280} height={780}>
+          <AuthConventions />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="polish" title="07 · Polish & specs" subtitle="App-letter marks, chart tokens, mobile-first proof, iconography, motion, print.">
+        <DCArtboard id="app-marks" label="App-letter marks (S/P/H/R)" width={1280} height={900}>
+          <AppMarksAtlas />
+        </DCArtboard>
+        <DCArtboard id="chart-tokens" label="Chart tokens & sample charts" width={1280} height={780}>
+          <ChartTokens />
+        </DCArtboard>
+        <DCArtboard id="mobile-proof" label="Mobile-first checklist proof" width={1280} height={900}>
+          <MobileFirstProof />
+        </DCArtboard>
+        <DCArtboard id="icons" label="Iconography spec" width={1280} height={780}>
+          <IconographySpec />
+        </DCArtboard>
+        <DCArtboard id="motion" label="Motion & transitions" width={1280} height={780}>
+          <MotionSpec />
+        </DCArtboard>
+        <DCArtboard id="print" label="Print stylesheet · paperless export" width={1280} height={900}>
+          <PrintSpec />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="handoff" title="09 · Handoff" subtitle="Mark exports, email templates, splash screens, and the start-here card for Claude Code.">
+        <DCArtboard id="handoff-card" label="Start here · Claude Code" width={1280} height={920}>
+          <HandoffCard />
+        </DCArtboard>
+        <DCArtboard id="mark-assets" label="Mark exports (19 files)" width={1280} height={1100}>
+          <MarkAssets />
+        </DCArtboard>
+        <DCArtboard id="email-sentinel" label="Email · Sentinel alert" width={720} height={920}>
+          <SentinelAlertEmail />
+        </DCArtboard>
+        <DCArtboard id="email-paperless" label="Email · Paperless review" width={720} height={920}>
+          <PaperlessReviewEmail />
+        </DCArtboard>
+        <DCArtboard id="splash-desktop" label="Splash · desktop (hydrating)" width={1280} height={780}>
+          <div className="wf-root theme-frontier">
+            <DesktopSplash hydrating app="Sentinel" />
+          </div>
+        </DCArtboard>
+        <DCArtboard id="splash-mobile" label="Splash · mobile" width={390} height={844}>
+          <div className="wf-root theme-frontier">
+            <MobileSplash app="Sentinel" />
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="roadmap" title="10 · Status" subtitle="v1.0 complete \u2014 ready to scaffold.">
+        <DCArtboard id="roadmap" label="Status · v1.0 ready" width={1280} height={680}>
+          <Roadmap />
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Wright Family · Sentinel">
+  <defs>
+    <linearGradient id="og-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#13171f"></stop>
+      <stop offset="100%" stop-color="#1f2531"></stop>
+    </linearGradient>
+    <radialGradient id="og-glow" cx="0.2" cy="0.2" r="0.6">
+      <stop offset="0%" stop-color="#c24b3a" stop-opacity="0.18"></stop>
+      <stop offset="100%" stop-color="#c24b3a" stop-opacity="0"></stop>
+    </radialGradient>
+    <mask id="og-mark">
+      <rect width="62" height="100" fill="white"></rect>
+      <text x="31" y="48" text-anchor="middle" font-family="&#39;IBM Plex Sans Condensed&#39;,&#39;IBM Plex Sans&#39;,system-ui,sans-serif" font-weight="700" font-size="40" letter-spacing="-1.5" fill="black">W</text>
+      <rect x="14" y="58" width="34" height="1.6" fill="black"></rect>
+      <path d="M31.000,66.000 L33.962,73.923 L42.413,74.292 L35.793,79.557 L38.053,87.708 L31.000,83.040 L23.947,87.708 L26.207,79.557 L19.587,74.292 L28.038,73.923 Z" fill="black"></path>
+    </mask>
+  </defs>
+  <rect width="1200" height="630" fill="url(#og-bg)"></rect>
+  <rect width="1200" height="630" fill="url(#og-glow)"></rect>
+  <g transform="translate(100, 125) scale(3.8)">
+    <rect x="2" y="2" width="58" height="96" rx="6" fill="#c24b3a" mask="url(#og-mark)"></rect>
+  </g>
+  <g transform="translate(620, 240)">
+    <text font-family="&#39;IBM Plex Mono&#39;,ui-monospace,monospace" font-size="20" letter-spacing="4" fill="#8d95a6">WRIGHT FAMILY</text>
+    <text y="80" font-family="&#39;IBM Plex Sans&#39;,system-ui,sans-serif" font-size="78" font-weight="600" letter-spacing="-1.5" fill="#ebe4d4">Sentinel</text>
+    <line x1="0" y1="115" x2="100" y2="115" stroke="#c24b3a" stroke-width="3"></line>
+    <text y="160" font-family="&#39;IBM Plex Sans&#39;,system-ui,sans-serif" font-size="22" fill="#8d95a6">wrightfamily.org</text>
+  </g>
+</svg>

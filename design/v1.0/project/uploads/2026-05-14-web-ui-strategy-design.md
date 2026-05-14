@@ -22,21 +22,6 @@ Stop reinventing the UI wheel across homelab apps by building a **thin, repeatab
 - **A "platform" with plugin system.** The kit is a thin spine, not infrastructure.
 - **Native mobile apps.** Mobile web is the target.
 
-## Design v1.0 — Source of Truth
-
-Visual and component-level specification was authored separately in Claude Design and exported as a handoff bundle, archived at `design/v1.0/` in this repo. The strategy spec (this document) defines the *approach*; the design v1.0 bundle defines the *appearance* and the *component contract*.
-
-When the two diverge: **the canvas wins** until the canvas is updated. The handoff bundle contains:
-
-- `design/v1.0/project/Wright UI System.html` — the canvas, top-to-bottom design (brand, tokens, all 13 components with variants, all 8 page recipes desktop + mobile, states, auth conventions, polish, status).
-- `design/v1.0/project/tokens.css` — canonical semantic tokens. **This file is dropped directly into `packages/ui/src/lib/theme/tokens.css` unchanged.**
-- `design/v1.0/project/shared/base.css` — base reset + component layer. The component CSS is split out into `packages/ui/src/lib/theme/styles.css`.
-- `design/v1.0/project/assets/` — brand marks (wright/sentinel/higgins/paperless/scan-router), app icons (1024px), favicon, social OG images.
-- `design/v1.0/project/HANDOFF.md` — explicit step-by-step implementation order, smoke-test checklist, and recipe→render-mode cheatsheet. **This is the canonical implementation plan.**
-- `design/v1.0/project/*.jsx` — visual-reference-only React/JSX renderings of each component and recipe. Components are re-authored as native Svelte 5 with matching DOM shape and class names.
-
-The design picks the **Frontier** direction (committed dusty Texas: brick red `#c24b3a`, oxidized navy `#13171f`, bone text `#ebe4d4`, IBM Plex Sans / Plex Sans Condensed / Plex Mono).
-
 ## Architecture
 
 ### Stack
@@ -84,7 +69,7 @@ web-ui/
 │   │       │   ├── styles.css  # base styles + component CSS (canonical visual system)
 │   │       │   └── tailwind-preset.js   # optional ergonomic layer
 │   │       └── icons/          # Lucide re-exports
-│   └── create-app/             # scaffolder; local invocation during vertical slice
+│   └── create-app/             # `bun create @wright/app <name>` scaffolder
 ├── templates/
 │   └── app/                    # the SOURCE OF TRUTH — see §"Template App"
 ├── docs/                       # explanations of what the template embodies
@@ -123,7 +108,7 @@ Apps can use either, both, or only `styles.css`. Tailwind is never a hard depend
 
 ### Theme neutrality
 
-The kit ships both dark and light token sets and is **theme-neutral by default**. The template app chooses dark (homelab-native admin feel); family-facing apps are free to default to light. Theme switching is a `data-theme` attribute on `<html>` (`data-theme="dark"` / `data-theme="light"`).
+The kit ships both dark and light token sets and is **theme-neutral by default**. The template app chooses dark (homelab-native admin feel); family-facing apps are free to default to light. Theme switching is a class on `<html>` (`[data-theme="dark"]` / `[data-theme="light"]`).
 
 ## Component Library (foundational set)
 
@@ -178,7 +163,7 @@ In-repo source at `web-ui/skills/`. Symlinked to `~/.claude/skills/` (or whereve
 ### `homelab-web-ui` (primary)
 
 Teaches agents:
-- How to scaffold a new app. Vertical-slice form is a local invocation against `packages/create-app` (exact command pinned in implementation). `bun create @wright/app <name>` becomes the polished/public form once distribution is resolved.
+- How to scaffold a new app via `bun create @wright/app <name>`.
 - The **render-mode decision** — when to use default, `csr = false`, or `prerender`.
 - The **page recipe map** — match the page being built to the closest recipe; copy and adapt.
 - **Mobile-first checklist** — 375px first, ≥44px tap targets, View Transitions enabled, no hover-only affordances.
@@ -303,7 +288,7 @@ The first implementation slice is intentionally small:
 We will know this design is working when:
 
 **Early proof (end of vertical slice):**
-- A throwaway app can be scaffolded via the vertical-slice scaffolder command, runs, and passes the mobile smoke check (375px, ≥44px tap targets, visible focus states, no hover-only controls).
+- A throwaway app can be scaffolded with `bun create @wright/app`, runs, and passes the mobile smoke check (375px, ≥44px tap targets, visible focus states, no hover-only controls).
 
 **Mature (after rollout):**
 - A new app's first usable UI takes <30 min of agent work end-to-end.
