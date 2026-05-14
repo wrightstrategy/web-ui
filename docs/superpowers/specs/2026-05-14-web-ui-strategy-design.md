@@ -62,7 +62,7 @@ web-ui/
 ├── packages/
 │   ├── ui/                     # @wright/ui — component library
 │   │   └── src/lib/
-│   │       ├── components/     # 12 foundational components (below)
+│   │       ├── components/     # 13 foundational components (below)
 │   │       ├── layout/         # AppShell, PageHeader
 │   │       ├── theme/
 │   │       │   ├── tokens.css  # semantic CSS variables
@@ -77,7 +77,7 @@ web-ui/
 └── README.md
 ```
 
-**Distribution:** `@wright/ui` published to Forgejo's npm registry (or consumed as a Bun workspace dep from sibling repos). Skills are symlinked from `web-ui/skills/` into `~/.claude/` initially; promoted to a plugin only after the workflow proves stable.
+**Distribution:** `@wright/ui` is consumed as a Bun workspace dependency from sibling repos under `~/Projects/`. Publishing to Forgejo's npm registry is deferred until a consumer lives outside the workspace (see Remaining Open Questions). Skills are symlinked from `web-ui/skills/` into `~/.claude/` initially; promoted to a plugin only after the workflow proves stable.
 
 ## Design System
 
@@ -262,7 +262,7 @@ Each migration likely promotes 1–3 components from app-local to `@wright/ui`.
 
 The first implementation slice is intentionally small:
 
-1. `packages/ui` with semantic tokens, `styles.css`, Tailwind preset, and the 12 foundational components.
+1. `packages/ui` with semantic tokens, `styles.css`, Tailwind preset, and the 13 foundational components.
 2. `templates/app` using those components in the 7 page recipes.
 3. `packages/create-app` that copies the template and wires the workspace dependency.
 4. `homelab-web-ui` skill explaining render modes and page-recipe mapping.
@@ -276,17 +276,21 @@ The first implementation slice is intentionally small:
 - **Forms:** Superforms + Zod default; a "simple form action without Superforms" escape hatch documented for tiny pages.
 - **Charts:** Per-app for now. Add chart-adjacent tokens (axis colors, grid colors) and layout guidance only. Bless a library only when Sentinel forces real requirements.
 - **Skill distribution:** In-repo, symlinked to `~/.claude/`. Promote to a plugin only after the workflow stabilizes.
+- **Icon library:** Lucide. Large set, tree-shakable, MIT. Re-exported from `@wright/ui/icons`.
+- **Theme switcher:** App-local for now. The kit supports both themes via `[data-theme]` attribute; a shared `<ThemeSwitcher>` component is deferred until two apps need one.
 
 ## Remaining Open Questions
 
-- **Forgejo npm registry vs. workspace-only distribution.** Workspace-only is simpler if all consumers are sibling repos under `~/Projects/`. Registry is needed if any consumer lives elsewhere. Default to workspace-only; revisit if friction appears.
-- **Icon library.** Lucide is the working assumption (large set, tree-shakable, MIT). Confirm during implementation.
-- **Theme switcher in apps.** The kit supports both themes via `[data-theme]` attribute; whether to ship a `<ThemeSwitcher>` component or leave it to apps is TBD. Default to leave-to-apps until two apps want one.
+- **Forgejo npm registry vs. workspace-only distribution.** Workspace-only is the default. Registry setup is deferred until a consumer lives outside `~/Projects/` or workspace friction appears.
 
 ## Success Criteria
 
 We will know this design is working when:
 
+**Early proof (end of vertical slice):**
+- A throwaway app can be scaffolded with `bun create @wright/app`, runs, and passes the mobile smoke check (375px, ≥44px tap targets, visible focus states, no hover-only controls).
+
+**Mature (after rollout):**
 - A new app's first usable UI takes <30 min of agent work end-to-end.
 - A screenshot of a card in scan-router and a card in sentinel are visually indistinguishable.
 - An app built with the kit passes the mobile-first checklist without manual polish.
