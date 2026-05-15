@@ -200,8 +200,8 @@ Build it app-local first. Promote to the kit only when:
 2. The component is generic enough that its props don't leak app-specific
    concerns.
 
-The `@wright/component-add` skill covers promotion mechanics. Until
-then, recipe-specific CSS lives in the recipe's `<style>` block.
+The `homelab-web-component-add` skill covers promotion mechanics.
+Until then, recipe-specific CSS lives in the recipe's `<style>` block.
 
 ## Reference
 
