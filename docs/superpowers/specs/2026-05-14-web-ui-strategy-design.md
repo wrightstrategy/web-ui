@@ -171,6 +171,25 @@ The template demonstrates:
 - View Transitions in the root `+layout.svelte`
 - One opt-in PWA configuration commented out, ready to enable
 
+## Pinned conventions (learned from the template app)
+
+These were discovered during the template-app build and bit hard enough to warrant pinning in the spec. The `homelab-web-ui` skill teaches them so the next agent doesn't re-discover them.
+
+### Vite config for the template + any consumer
+
+- `resolve.dedupe: ['svelte']` is **required**. Without it, packages/ui and `sveltekit-superforms` (and any other Svelte-shipping dep) each get their own pre-bundled Svelte runtime in Vite's `optimizeDeps`, with separate component contexts. The visible symptom is Superforms' `onDestroy(...)` throwing `lifecycle_outside_component` — but it silently breaks **all** form state binding (no fetch, no errors, no toasts).
+- `optimizeDeps.include: ['sveltekit-superforms', 'sveltekit-superforms/client']` forces a single shared pre-bundle.
+- `ssr.noExternal: ['sveltekit-superforms']` is needed because Superforms ships `.svelte` files (SuperDebug) that Node's SSR runtime cannot import directly.
+- `svelte` belongs in the **workspace-root** `devDependencies` so Bun hoists a single copy across `packages/ui` and `templates/*`.
+
+### Forms (recipe-level conventions)
+
+- **`novalidate` on every Superforms-bound form.** Inputs with `type="email"` or numeric `min`/`max` otherwise trigger HTML5 browser validation that silently blocks submission before Superforms can run server-side Zod. Result: no fetch, no error feedback, no UI signal at all. Server-side Zod is the single source of truth.
+- **Server validation, then client enhancement.** The form must work without JS: native POST → action validates → on success `redirect(303, ...?saved=…)`, on failure `fail(400, { form })`. With JS, `use:enhance` intercepts and Superforms applies the result.
+- **Coherent no-JS fallback is non-negotiable.** Successful submission renders a server-rendered banner via URL state (`?saved=<section>` or `?saved=1`). Toast is the *enhancement*, not the only success affordance. JS users get both; no-JS users see the banner alone.
+- **Multi-form pages: `invalidateAll: false` on every superForm, and matching `id: '<section>'` on both `superValidate(...)` (server) and `superForm(...)` (client).** Without `invalidateAll: false`, submitting one form re-runs the page's load and resets the other two to their initial values. Without matching `id`s, Superforms can't route a fail() result back to the right client form.
+- **Action returns `{ <formName> }` matching the page's `data.<formName>` property name.** That's how the result threads through `$page.form` to the right superForm instance.
+
 ## Skills
 
 In-repo source at `web-ui/skills/`. Symlinked to `~/.claude/skills/` (or wherever the harness expects).
@@ -184,6 +203,7 @@ Teaches agents:
 - **Mobile-first checklist** — 375px first, ≥44px tap targets, View Transitions enabled, no hover-only affordances.
 - Theme conventions (which token to reach for; never inline hex).
 - AppShell + PageHeader layout pattern.
+- **The pinned conventions** above: Vite config (`dedupe`, `optimizeDeps`, `noExternal`), Superforms forms (`novalidate`, `invalidateAll: false` for multi-form, redirect+banner first then toast), and the no-JS coherent fallback rule.
 
 ### `homelab-web-backend-bridge` (helper)
 
