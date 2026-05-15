@@ -11,8 +11,10 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
+    "@lucide/svelte": "^1.16.0",
     "@wright/ui": "workspace:*",
-    "@lucide/svelte": "^1.16.0"
+    "sveltekit-superforms": "^2.30.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.0.0",

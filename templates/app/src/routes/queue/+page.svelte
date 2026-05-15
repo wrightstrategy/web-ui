@@ -88,7 +88,7 @@
           {#each data.rows as row (row.id)}
             <tr>
               <td class="id">{row.id}</td>
-              <td>{row.title}</td>
+              <td><a class="row-title" href={`/queue/${row.id}/edit`}>{row.title}</a></td>
               <td><Badge tone={statusTone(row.status)} dot>{statusLabel(row.status)}</Badge></td>
               <td class="mono tnum" style="text-align: right;">
                 {row.confidence > 0 ? `${row.confidence}%` : '—'}
@@ -104,20 +104,22 @@
     <!-- Mobile: card list of the same rows. Hidden on desktop via CSS. -->
     <div class="queue-mobile">
       {#each data.rows as row (row.id)}
-        <Card>
-          <div class="qm-head">
-            <span class="mono qm-id">{row.id}</span>
-            <Badge tone={statusTone(row.status)} dot>{statusLabel(row.status)}</Badge>
-          </div>
-          <div class="qm-title">{row.title}</div>
-          <div class="qm-meta">
-            <span>{row.source}</span>
-            <span class="mono tnum">
-              {row.confidence > 0 ? `${row.confidence}%` : '—'}
-            </span>
-            <span class="mono qm-ts">{row.ts}</span>
-          </div>
-        </Card>
+        <a class="qm-card-link" href={`/queue/${row.id}/edit`}>
+          <Card>
+            <div class="qm-head">
+              <span class="mono qm-id">{row.id}</span>
+              <Badge tone={statusTone(row.status)} dot>{statusLabel(row.status)}</Badge>
+            </div>
+            <div class="qm-title">{row.title}</div>
+            <div class="qm-meta">
+              <span>{row.source}</span>
+              <span class="mono tnum">
+                {row.confidence > 0 ? `${row.confidence}%` : '—'}
+              </span>
+              <span class="mono qm-ts">{row.ts}</span>
+            </div>
+          </Card>
+        </a>
       {/each}
     </div>
   {/if}
@@ -164,6 +166,20 @@
     color: var(--text-muted);
   }
   .qm-ts { color: var(--text-subtle); }
+
+  .row-title {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+    transition: border-color var(--duration-fast);
+  }
+  .row-title:hover { border-bottom-color: var(--accent); }
+
+  .qm-card-link {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+  }
 
   @media (max-width: 767px) {
     .filter-bar { grid-template-columns: 1fr; }
