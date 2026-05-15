@@ -291,13 +291,13 @@ The first implementation slice is intentionally small:
 - **Forms:** Superforms + Zod default; a "simple form action without Superforms" escape hatch documented for tiny pages.
 - **Charts:** Per-app for now. Add chart-adjacent tokens (axis colors, grid colors) and layout guidance only. Bless a library only when Sentinel forces real requirements.
 - **Skill distribution:** In-repo, symlinked to `~/.claude/`. Promote to a plugin only after the workflow stabilizes.
-- **Icon library:** Lucide. Large set, tree-shakable, MIT. Re-exported from `@wright/ui/icons`.
+- **Icon library:** `@lucide/svelte` (the Svelte 5-native package, not `lucide-svelte`). Large set, tree-shakable, ISC. **Explicitly avoid `lucide-svelte`** — that package (through v0.460+) still uses Svelte 4's `SvelteComponentTyped` class shape, which does not structurally match Svelte 5's `Component<...>` type and produces opaque mismatches when passed through typed props (e.g. `NavSection[]`). Icons are passed by component reference, not re-exported from `@wright/ui` — the kit just types the shape (`NavIcon`).
 - **Theme switcher:** App-local for now. The kit supports both themes via `[data-theme]` attribute; a shared `<ThemeSwitcher>` component is deferred until two apps need one.
+- **Font hosting:** No remote Google Fonts import from the shared kit. `@wright/ui/styles.css` must not quietly depend on a third-party font request. Two acceptable patterns: (1) the kit ships self-hosted IBM Plex assets and exposes a static path apps can serve; (2) apps provide their own fonts and the kit only references the `--font-sans` / `--font-mono` / `--font-display` tokens. Pick (1) before the template app becomes canonical so consumers don't each re-solve this.
 
 ## Remaining Open Questions
 
 - **Forgejo npm registry vs. workspace-only distribution.** Workspace-only is the default. Registry setup is deferred until a consumer lives outside `~/Projects/` or workspace friction appears.
-- **Font hosting.** `@wright/ui/styles.css` currently imports IBM Plex from Google Fonts. For homelab reliability and privacy, prefer bundled/self-hosted fonts or a documented "apps provide fonts" path before the template app becomes canonical. Pin this before scaffolding the template app.
 
 ## Success Criteria
 

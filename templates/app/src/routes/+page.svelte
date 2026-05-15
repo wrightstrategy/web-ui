@@ -1,9 +1,16 @@
 <script lang="ts">
-  import { Badge, Button, Card, PageHeader, Table, toast } from '@wright/ui';
+  import { Badge, Button, Card, Modal, PageHeader, Table, toast } from '@wright/ui';
   import { Plus, Search } from '@lucide/svelte';
+
+  let modalOpen = $state(false);
 
   function showWelcomeToast() {
     toast.success('Welcome to the template', 'This is a Wright UI smoke test.');
+  }
+
+  function archive() {
+    toast.success('Archived', 'Document moved to archive.');
+    modalOpen = false;
   }
 
   const activity = [
@@ -16,9 +23,25 @@
 <PageHeader title="Overview" crumbs={[{ label: 'Template' }, { label: 'Overview' }]}>
   {#snippet actions()}
     <Button tone="ghost"><Search size={14} /> Search</Button>
+    <Button onclick={() => (modalOpen = true)}>Open modal</Button>
     <Button tone="primary" onclick={showWelcomeToast}><Plus size={14} /> Toast</Button>
   {/snippet}
 </PageHeader>
+
+<Modal
+  bind:open={modalOpen}
+  title="Archive document"
+  description="This moves the document out of the triage queue. You can restore it later from the archive view."
+>
+  <p>
+    Rivian Purchase Agreement.pdf · 4 pages · last reviewed 2 days ago.
+  </p>
+
+  {#snippet actions()}
+    <Button tone="ghost" onclick={() => (modalOpen = false)}>Cancel</Button>
+    <Button tone="danger" onclick={archive}>Archive</Button>
+  {/snippet}
+</Modal>
 
 <div class="wf-content">
   <!-- Status bar -->
