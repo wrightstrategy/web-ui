@@ -16,11 +16,15 @@
 
 /* ---------- Reset (scoped to .wf-root) ----------
    Apps either wrap their top-level container with class="wf-root", or
-   let the AppShell component apply it automatically. */
-.wf-root,
-.wf-root *,
-.wf-root *::before,
-.wf-root *::after {
+   let the AppShell component apply it automatically.
+
+   Reset selectors use :where() to drop their specificity to zero on
+   the .wf-root prefix, so component classes like .wf-btn can override
+   them without specificity gymnastics. */
+:where(.wf-root),
+:where(.wf-root) *,
+:where(.wf-root) *::before,
+:where(.wf-root) *::after {
   box-sizing: border-box;
 }
 .wf-root {
@@ -36,13 +40,13 @@
   letter-spacing: -0.005em;
   position: relative;
 }
-.wf-root h1, .wf-root h2, .wf-root h3, .wf-root h4, .wf-root p,
-.wf-root ul, .wf-root ol, .wf-root figure {
+:where(.wf-root) h1, :where(.wf-root) h2, :where(.wf-root) h3, :where(.wf-root) h4,
+:where(.wf-root) p, :where(.wf-root) ul, :where(.wf-root) ol, :where(.wf-root) figure {
   margin: 0;
   padding: 0;
 }
-.wf-root ul, .wf-root ol { list-style: none; }
-.wf-root button {
+:where(.wf-root) ul, :where(.wf-root) ol { list-style: none; }
+:where(.wf-root) button {
   font: inherit;
   color: inherit;
   background: none;
@@ -50,7 +54,7 @@
   cursor: pointer;
   padding: 0;
 }
-.wf-root a { color: inherit; text-decoration: none; }
+:where(.wf-root) a { color: inherit; text-decoration: none; }
 .wf-root .mono { font-family: var(--font-mono); font-feature-settings: "zero", "ss01"; letter-spacing: 0; }
 .wf-root .tnum { font-variant-numeric: tabular-nums; }
 .wf-root .upper { text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; }

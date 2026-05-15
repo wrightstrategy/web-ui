@@ -61,29 +61,35 @@
 
 <AppShell {nav}>
   {#snippet brand()}
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
       <span
-        style="
-          color: var(--accent);
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 28px;
-          height: 28px;
-        "
+        style="color: var(--accent); display: inline-flex; align-items: center;"
         aria-hidden="true"
       >
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="currentColor">
-          <rect x="2" y="2" width="24" height="24" rx="4" />
-          <text
-            x="14"
-            y="20"
-            text-anchor="middle"
-            font-family="'IBM Plex Sans Condensed', sans-serif"
-            font-size="16"
-            font-weight="700"
-            fill="var(--accent-on)"
-          >W</text>
+        <!-- Canonical Wright stencil mark: rounded plate with W, bar, and
+             five-point star cut from the surface. From design v1.0. -->
+        <svg width="22" height="36" viewBox="0 0 62 100" fill="currentColor" role="img" aria-label="Wright Family">
+          <defs>
+            <mask id="wf-brand-stencil-w">
+              <rect width="62" height="100" fill="white" />
+              <text
+                x="31"
+                y="48"
+                text-anchor="middle"
+                font-family="'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif"
+                font-weight="700"
+                font-size="40"
+                letter-spacing="-1.5"
+                fill="black"
+              >W</text>
+              <rect x="14" y="58" width="34" height="1.6" fill="black" />
+              <path
+                d="M31,66 L33.962,73.923 L42.413,74.292 L35.793,79.557 L38.053,87.708 L31,83.04 L23.947,87.708 L26.207,79.557 L19.587,74.292 L28.038,73.923 Z"
+                fill="black"
+              />
+            </mask>
+          </defs>
+          <rect x="2" y="2" width="58" height="96" rx="6" mask="url(#wf-brand-stencil-w)" />
         </svg>
       </span>
       <div style="line-height: 1.05;">
