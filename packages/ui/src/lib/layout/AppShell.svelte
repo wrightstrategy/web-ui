@@ -1,7 +1,7 @@
 <script lang="ts" module>
   import type { Component, Snippet } from 'svelte';
 
-  export type NavIcon = Component<{ size?: number; class?: string }>;
+  export type NavIcon = Component<{ size?: number | string; class?: string }>;
 
   export type NavItem = {
     href: string;
@@ -13,6 +13,10 @@
   export type NavSection = {
     /** Optional section heading (omit for the top group). */
     section?: string;
+    /** Skip in the desktop sidebar; only appears in the mobile tabbar. */
+    mobileOnly?: boolean;
+    /** Skip in the mobile tabbar; only appears in the desktop sidebar. */
+    desktopOnly?: boolean;
     items: NavItem[];
   };
 </script>
@@ -27,12 +31,14 @@
 
   let { brand, nav = [], foot, children }: Props = $props();
 
-  // The bottom tabbar shows up to the first 5 nav items, flattened across
-  // sections. Apps that need a different mobile nav set should add a
-  // `mobile-only` section as the first one — these items will be picked up
-  // for the tabbar without cluttering the desktop sidebar.
+  const sidebarSections = $derived(nav.filter((s) => !s.mobileOnly));
+
+  // Mobile tabbar shows up to the first 5 items, flattened from sections
+  // that aren't desktop-only. Apps can use `mobileOnly: true` on a leading
+  // section to put dedicated tabbar items there without cluttering the
+  // desktop sidebar.
   const tabbarItems = $derived(
-    nav.flatMap((s) => s.items).slice(0, 5)
+    nav.filter((s) => !s.desktopOnly).flatMap((s) => s.items).slice(0, 5)
   );
 </script>
 
@@ -42,7 +48,7 @@
       <div class="wf-brand">{@render brand()}</div>
     {/if}
     <nav class="wf-nav" aria-label="Primary">
-      {#each nav as section, si (si)}
+      {#each sidebarSections as section, si (si)}
         {#if section.section}
           <div class="wf-nav-section">{section.section}</div>
         {/if}
