@@ -1,0 +1,7 @@
+import { listJobs } from '$lib/server/mock-operations';
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ depends }) => {
+  depends('app:operations-list');
+  return { jobs: listJobs() };
+};
