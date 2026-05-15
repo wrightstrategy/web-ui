@@ -59,16 +59,21 @@
     const first = list[0];
     const last = list[list.length - 1];
     const active = document.activeElement as HTMLElement | null;
-    if (e.shiftKey) {
-      if (active === first || (active && !list.includes(active))) {
-        e.preventDefault();
-        last.focus();
-      }
-    } else {
-      if (active === last || (active && !list.includes(active))) {
-        e.preventDefault();
-        first.focus();
-      }
+    const isInDialog = !!active && list.includes(active);
+
+    if (!isInDialog) {
+      // Focus somewhere outside the dialog (body / null / element removed):
+      // pull it back in regardless of direction.
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+      return;
+    }
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
     }
   }
 
@@ -118,7 +123,6 @@
     role="presentation"
     use:portal
     onclick={onBackdropClick}
-    onkeydown={onKeydown}
   >
     <div
       bind:this={dialogEl}
@@ -127,6 +131,8 @@
       aria-modal="true"
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
+      tabindex={-1}
+      onkeydown={onKeydown}
     >
       <header class="wf-modal-head">
         <div class="wf-modal-titles">
