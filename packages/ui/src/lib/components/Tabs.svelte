@@ -87,7 +87,13 @@
         aria-disabled={tab.disabled || undefined}
         tabindex={isActive ? 0 : -1}
         data-tab-value={tab.value}
-        onclick={() => !tab.disabled && select(tab.value)}
+        onclick={(e) => {
+          if (tab.disabled) {
+            e.preventDefault();
+            return;
+          }
+          select(tab.value);
+        }}
       >
         <span>{tab.label}</span>
         {#if tab.badge !== undefined}

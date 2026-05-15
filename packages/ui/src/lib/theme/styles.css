@@ -637,11 +637,67 @@ select.wf-select.err:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--dang
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   max-width: 520px; width: 100%;
+  max-height: calc(100vh - 48px);
   padding: 20px;
   display: flex; flex-direction: column; gap: 14px;
 }
+.wf-modal.sm { max-width: 380px; }
+.wf-modal.lg { max-width: 720px; }
 .wf-modal h3 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
-.wf-modal .actions { display: flex; gap: 8px; justify-content: flex-end; }
+.wf-modal .actions { display: flex; gap: 8px; justify-content: flex-end; flex: 0 0 auto; }
+
+/* Real-app portal overlay: the canvas mocks render .wf-modal-shell inside
+   an artboard (position: relative). The Modal component appends an
+   overlay variant that pins to the viewport. */
+.wf-modal-shell.wf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+}
+.wf-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 0 0 auto;
+}
+.wf-modal-titles {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wf-modal-desc {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0;
+}
+.wf-modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  width: 44px;
+  height: 44px;
+  margin: -10px -10px 0 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+  flex: 0 0 auto;
+}
+.wf-modal-close:hover { background: var(--surface); color: var(--text); }
+.wf-modal-close:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.wf-modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 0;
+}
 
 /* ---------- Toast ---------- */
 .wf-toast {
@@ -659,8 +715,53 @@ select.wf-select.err:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--dang
 .wf-toast.ok   { border-left-color: var(--success); }
 .wf-toast.warn { border-left-color: var(--warning); }
 .wf-toast.err  { border-left-color: var(--danger); }
+.wf-toast.info { border-left-color: var(--info); }
 .wf-toast .title { font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .wf-toast .body  { color: var(--text-muted); font-size: 12.5px; line-height: 1.45; }
+.wf-toast-close {
+  background: transparent;
+  border: 0;
+  color: var(--text-subtle);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  margin: -6px -6px 0 0;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  transition: color var(--duration-fast), background var(--duration-fast);
+}
+.wf-toast-close:hover { color: var(--text); background: var(--surface); }
+.wf-toast-close:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.wf-toast-action { flex: 0 0 auto; }
+
+.wf-toast-viewport {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: calc(100vw - 32px);
+}
+.wf-toast-viewport > .wf-toast { pointer-events: auto; }
+@media (max-width: 767px) {
+  .wf-toast-viewport {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    max-width: none;
+  }
+  .wf-toast-viewport > .wf-toast {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+}
 
 /* ---------- Skeleton ---------- */
 .wf-skeleton {
