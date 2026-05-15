@@ -57,7 +57,7 @@ type Props = {
 `AppMeta` is re-exported from `packages/ui/src/lib/index.ts` so apps can type
 their `meta` object.
 
-The kit's own version is exposed as a baked constant:
+The kit's own version is exposed as an exported constant:
 
 ```ts
 // packages/ui/src/lib/version.ts
