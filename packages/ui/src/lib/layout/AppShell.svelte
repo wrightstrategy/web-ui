@@ -33,6 +33,8 @@
 </script>
 
 <script lang="ts">
+  import { KIT_VERSION } from '../version.js';
+
   type Props = {
     brand?: Snippet;
     nav?: NavSection[];
@@ -79,8 +81,21 @@
         {/each}
       {/each}
     </nav>
-    {#if foot}
-      <div class="wf-foot">{@render foot()}</div>
+    {#if foot || meta}
+      <div class="wf-foot">
+        {#if foot}
+          <div class="wf-foot-row">{@render foot()}</div>
+        {/if}
+        {#if meta}
+          <div class="wf-version-block">
+            <div class="wf-version-name">{meta.name}</div>
+            {#if meta.version}
+              <div class="wf-version-app">v{meta.version}</div>
+            {/if}
+            <div class="wf-version-kit">ui v{KIT_VERSION}</div>
+          </div>
+        {/if}
+      </div>
     {/if}
   </aside>
 
