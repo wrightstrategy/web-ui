@@ -1,6 +1,6 @@
 # App version display — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** If you have the superpowers plugin available, use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. In runners without those skills (e.g. Codex), follow the tasks directly with the normal repo workflow — each task ends in its own commit, so the structure works either way. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make app name + app version + `@wright/ui` kit version glanceable on every page of every homelab web app, on both desktop and mobile, via a typed `meta` prop on `AppShell`.
 
@@ -447,6 +447,18 @@ Replace it with this — the desktop default hides the strip, and the mobile med
   font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-subtle);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.wf-shell-version-strip .wf-version-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wf-shell-version-strip .wf-sep,
+.wf-shell-version-strip .wf-version-app,
+.wf-shell-version-strip .wf-version-kit {
+  flex-shrink: 0;
 }
 .wf-shell-version-strip .wf-sep { opacity: 0.6; }
 ```
@@ -455,6 +467,7 @@ Notes:
 
 - `grid-template-rows: 1fr auto auto;` is correct for both "tabbar present" and "tabbar absent": when the tabbar element isn't in the DOM, the third `auto` row collapses to 0 and the strip is the bottom-most row pinned against the viewport edge.
 - Both `<aside>`, `<main>`, the strip, and the tabbar are flow children of the `.wf-shell` grid, so they auto-place into successive rows in the order they appear in the DOM (which is why Step 1 puts the strip *after* `<main>` and *before* the tabbar).
+- Overflow contract: the strip is a single-line flex row (`white-space: nowrap; overflow: hidden`). `.wf-version-name` is the only flex child allowed to shrink — it gets `min-width: 0` and `text-overflow: ellipsis`. The separators and the two version segments are `flex-shrink: 0`, so a long app name clips with an ellipsis rather than pushing `v1.2.3 · ui v0.3.1` off the screen edge. The strip never grows past its `min-height`.
 
 - [ ] **Step 3: Verify svelte-check**
 
@@ -646,7 +659,40 @@ cd templates/app && bun run dev
 
 Kill the dev server.
 
-- [ ] **Step 3: Confirm git log**
+- [ ] **Step 3: No-tabbar visual probe (manual, must revert)**
+
+The spec explicitly locks "the strip still renders when there is no mobile tabbar, pinned to the bottom edge in the row the tabbar would have occupied." The normal template app always has a tabbar, so the previous step doesn't exercise this. Probe it temporarily:
+
+Edit `templates/app/src/routes/+layout.svelte` and replace the `nav` constant with an empty array:
+
+```svelte
+const nav: NavSection[] = [];
+```
+
+Run:
+
+```bash
+cd templates/app && bun run dev
+```
+
+Open `http://localhost:5173` at ≤767px. Confirm:
+
+- No icon tabbar at the bottom of the viewport.
+- The version strip is pinned directly to the bottom edge of the viewport (no tabbar gap below it).
+- The page-content area fills the rest of the screen above the strip.
+
+Kill the dev server.
+
+**Revert the change** before proceeding — do not commit it:
+
+```bash
+git checkout -- templates/app/src/routes/+layout.svelte
+git status
+```
+
+Expected: `git status` reports a clean working tree.
+
+- [ ] **Step 4: Confirm git log**
 
 ```bash
 git log --oneline -7
