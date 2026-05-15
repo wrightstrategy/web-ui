@@ -32,54 +32,41 @@
   );
 </script>
 
+{#snippet spinner()}
+  <svg class="wf-spinner" viewBox="0 0 24 24" aria-hidden="true">
+    <circle
+      cx="12"
+      cy="12"
+      r="9"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-dasharray="14 30"
+      stroke-linecap="round"
+    />
+  </svg>
+{/snippet}
+
 {#if href}
-  <a {href} class={cls} {...rest as HTMLAnchorAttributes}>
-    {#if loading}
-      <svg
-        class="wf-spinner"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-dasharray="14 30"
-          stroke-linecap="round"
-        />
-      </svg>
-    {/if}
+  <a
+    {...rest as HTMLAnchorAttributes}
+    {href}
+    class={cls}
+    aria-busy={loading || undefined}
+    aria-disabled={loading || undefined}
+  >
+    {#if loading}{@render spinner()}{/if}
     {@render children?.()}
   </a>
 {:else}
   <button
+    {...rest as HTMLButtonAttributes}
     type={(rest as HTMLButtonAttributes).type ?? 'button'}
     class={cls}
     disabled={loading || (rest as HTMLButtonAttributes).disabled}
     aria-busy={loading || undefined}
-    {...rest as HTMLButtonAttributes}
   >
-    {#if loading}
-      <svg
-        class="wf-spinner"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="9"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2.5"
-          stroke-dasharray="14 30"
-          stroke-linecap="round"
-        />
-      </svg>
-    {/if}
+    {#if loading}{@render spinner()}{/if}
     {@render children?.()}
   </button>
 {/if}

@@ -431,12 +431,17 @@
   font-size: 12px;
 }
 
-/* Checkbox */
+/* Checkbox ----------
+   Two surfaces:
+   - Real <label class="wf-check"> with hidden native input + visible box;
+     state driven by the input's :checked, focus by :focus-visible.
+   - Static mock <span class="wf-check on"> for canvas usage. */
 .wf-check {
   display: inline-flex; align-items: center; gap: 9px;
   cursor: pointer;
   font-size: 14px;
   min-height: 32px;
+  position: relative;
 }
 .wf-check .box {
   width: 16px; height: 16px;
@@ -446,12 +451,36 @@
   display: flex; align-items: center; justify-content: center;
   color: transparent;
   flex: 0 0 auto;
-  transition: background var(--duration-fast), border-color var(--duration-fast), color var(--duration-fast);
+  transition: background var(--duration-fast), border-color var(--duration-fast),
+              color var(--duration-fast), box-shadow var(--duration-fast);
 }
 .wf-check.on .box {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-on);
+}
+.wf-check input.wf-check-native {
+  position: absolute;
+  opacity: 0;
+  width: 1px; height: 1px;
+  margin: 0; padding: 0;
+  pointer-events: none;
+}
+.wf-check input.wf-check-native:checked ~ .box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-on);
+}
+.wf-check input.wf-check-native:focus-visible ~ .box {
+  box-shadow: var(--focus-ring);
+  border-color: var(--accent);
+}
+.wf-check input.wf-check-native:disabled ~ .box {
+  opacity: 0.55;
+}
+.wf-check:has(input.wf-check-native:disabled) {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 /* Radio */
@@ -490,7 +519,10 @@
 .wf-toggle.on { background: var(--accent); }
 .wf-toggle.on::after { transform: translateX(14px); background: var(--accent-on); }
 
-/* Select */
+/* Select ----------
+   Two surfaces:
+   - Native <select class="wf-select"> uses appearance:none + SVG chevron.
+   - Div mock <div class="wf-select"> keeps the ::after chevron (canvas mocks). */
 .wf-select {
   width: 100%;
   padding: 10px 36px 10px 12px;
@@ -505,12 +537,31 @@
   min-height: 44px;
 }
 .wf-select::after {
-  content: ''; position: absolute; right: 14px;
+  content: ''; position: absolute; right: 14px; top: 50%;
   width: 8px; height: 8px;
   border-right: 1.5px solid var(--text-subtle);
   border-bottom: 1.5px solid var(--text-subtle);
-  transform: translateY(-3px) rotate(45deg);
+  transform: translateY(-7px) rotate(45deg);
 }
+select.wf-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path d='M1 3l4 4 4-4' fill='none' stroke='%235d6477' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  outline: none;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+select.wf-select::after { display: none; }
+select.wf-select:hover { border-color: var(--border-strong); }
+select.wf-select:focus,
+select.wf-select:focus-visible {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+select.wf-select[disabled] { opacity: 0.55; cursor: not-allowed; }
+select.wf-select.err { border-color: var(--danger); }
+select.wf-select.err:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent); }
 
 /* ---------- Tabs ---------- */
 .wf-tabs {

@@ -297,6 +297,7 @@ The first implementation slice is intentionally small:
 ## Remaining Open Questions
 
 - **Forgejo npm registry vs. workspace-only distribution.** Workspace-only is the default. Registry setup is deferred until a consumer lives outside `~/Projects/` or workspace friction appears.
+- **Font hosting.** `@wright/ui/styles.css` currently imports IBM Plex from Google Fonts. For homelab reliability and privacy, prefer bundled/self-hosted fonts or a documented "apps provide fonts" path before the template app becomes canonical. Pin this before scaffolding the template app.
 
 ## Success Criteria
 
