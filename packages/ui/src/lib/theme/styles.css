@@ -142,8 +142,6 @@
   line-height: 1.15;
 }
 .wf-sidebar .wf-version-block .wf-version-name {
-  font-size: 12px;
-  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
