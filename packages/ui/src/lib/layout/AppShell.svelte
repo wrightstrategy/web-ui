@@ -103,6 +103,18 @@
     {@render children?.()}
   </main>
 
+  {#if meta}
+    <div class="wf-shell-version-strip">
+      <span class="wf-version-name">{meta.name}</span>
+      {#if meta.version}
+        <span class="wf-sep" aria-hidden="true">·</span>
+        <span class="wf-version-app">v{meta.version}</span>
+      {/if}
+      <span class="wf-sep" aria-hidden="true">·</span>
+      <span class="wf-version-kit">ui v{KIT_VERSION}</span>
+    </div>
+  {/if}
+
   {#if tabbarItems.length > 0}
     <nav class="wf-phone-tabbar wf-shell-tabbar" aria-label="Mobile primary">
       {#each tabbarItems as item, i (i)}
