@@ -12,6 +12,9 @@ export type QueueRow = {
   ts: string;
   tags: string;
   notes: string;
+  /** Triage marker: deferred docs stay needs_review but drop out of the
+      triage list until reset. Real apps would track deferredUntil. */
+  deferred?: boolean;
 };
 
 const ROWS: QueueRow[] = [
@@ -40,4 +43,29 @@ export function updateRow(id: string, patch: Partial<QueueRow>): QueueRow | unde
   if (i === -1) return undefined;
   ROWS[i] = { ...ROWS[i], ...patch };
   return ROWS[i];
+}
+
+// ─── Triage helpers ─────────────────────────────────────────────────
+
+export function listTriage(): QueueRow[] {
+  return ROWS.filter((r) => r.status === 'needs_review' && !r.deferred);
+}
+
+export function approveTriage(id: string): QueueRow | undefined {
+  return updateRow(id, { status: 'auto', confidence: Math.max(90, ROWS.find((r) => r.id === id)?.confidence ?? 90) });
+}
+
+export function rejectTriage(id: string): QueueRow | undefined {
+  return updateRow(id, { status: 'error' });
+}
+
+export function deferTriage(id: string): QueueRow | undefined {
+  return updateRow(id, { deferred: true });
+}
+
+/** Demo helper: clear all triage state so the recipe can be replayed. */
+export function resetTriage(): void {
+  for (const r of ROWS) {
+    if (r.deferred) r.deferred = false;
+  }
 }
