@@ -147,7 +147,7 @@
 .wf-content {
   padding: 24px 28px;
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -297,6 +297,43 @@
 .wf-table tr:hover td { background: var(--surface-raised); }
 .wf-table .id { font-family: var(--font-mono); color: var(--accent); font-size: 12px; }
 .wf-table .ts { font-family: var(--font-mono); color: var(--text-subtle); font-size: 12px; }
+
+/* ---------- AppShell responsive collapse ----------
+   Below 768px the sidebar hides, the bottom tabbar shows, the main
+   column takes full width, and the topbar steals room for a brand block
+   in place of crumbs. */
+.wf-shell .wf-shell-tabbar { display: none; }
+
+@media (max-width: 767px) {
+  .wf-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+  .wf-shell > .wf-sidebar { display: none; }
+  .wf-shell > .wf-main { grid-column: 1; }
+  .wf-shell > .wf-shell-tabbar { display: flex; }
+  .wf-topbar { padding: 12px 16px; }
+  .wf-content { padding: 16px; }
+}
+
+/* ---------- Page header (topbar) extensions ----------
+   The base .wf-topbar styling lives above; these rules add slots for
+   badges and actions that flow to the right edge. */
+.wf-topbar .wf-pageheader-badges {
+  display: flex; align-items: center; gap: 6px;
+}
+.wf-topbar .wf-pageheader-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+.wf-pageheader-tabs {
+  padding: 0 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 767px) {
+  .wf-pageheader-tabs { padding: 0 16px; overflow-x: auto; }
+}
 
 /* ---------- Mobile screen ----------
    Used by AppShell when viewport < 768px and by mobile recipes. */

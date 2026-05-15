@@ -1,17 +1,30 @@
 import { compile } from 'svelte/compiler';
-import { readdirSync, readFileSync } from 'fs';
+import { readdirSync, readFileSync, statSync } from 'fs';
+import { join } from 'path';
 
-const dir = 'src/lib/components';
+function walk(root: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(root)) {
+    const path = join(root, entry);
+    if (statSync(path).isDirectory()) {
+      out.push(...walk(path));
+    } else if (entry.endsWith('.svelte')) {
+      out.push(path);
+    }
+  }
+  return out;
+}
+
 let bad = 0;
-for (const f of readdirSync(dir).filter((n) => n.endsWith('.svelte'))) {
-  const src = readFileSync(`${dir}/${f}`, 'utf8');
+for (const path of walk('src/lib')) {
+  const src = readFileSync(path, 'utf8');
   try {
     const r = compile(src, { generate: 'client', dev: false });
     const w = r.warnings ?? [];
-    console.log(f.padEnd(20), w.length ? `WARNINGS(${w.length})` : 'clean');
+    console.log(path.padEnd(40), w.length ? `WARNINGS(${w.length})` : 'clean');
     for (const x of w) console.log('   -', x.message);
   } catch (e) {
-    console.log(f.padEnd(20), 'COMPILE ERROR');
+    console.log(path.padEnd(40), 'COMPILE ERROR');
     console.log('   ', (e as Error).message.split('\n')[0]);
     bad++;
   }
