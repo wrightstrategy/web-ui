@@ -13,6 +13,8 @@ export { default as ToastViewport } from './components/ToastViewport.svelte';
 export { default as AppShell } from './layout/AppShell.svelte';
 export { default as PageHeader } from './layout/PageHeader.svelte';
 
+export { KIT_VERSION } from './version.js';
+
 export { toast } from './stores/toast.svelte.js';
 export type { Toast, ToastAction, ToastInput, ToastTone } from './stores/toast.svelte.js';
 
