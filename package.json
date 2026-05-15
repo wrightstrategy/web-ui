@@ -6,7 +6,8 @@
   "workspaces": ["packages/*", "templates/*"],
   "scripts": {
     "lint": "biome check .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "create-app": "bun packages/create-app/cli.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

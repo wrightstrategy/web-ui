@@ -1,0 +1,13 @@
+{
+  "name": "@wright/create-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scaffold a new Wright Family UI app from templates/app.",
+  "bin": {
+    "create-wright-app": "./cli.ts"
+  },
+  "scripts": {
+    "start": "bun cli.ts"
+  }
+}
