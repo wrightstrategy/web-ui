@@ -72,9 +72,10 @@ duplicating the import.
 
 ## KIT_VERSION mechanism
 
-`KIT_VERSION` is derived at build time from `packages/ui/package.json` via a
-direct JSON import. There is no sync script, no codegen step, and no
-pre-commit hook. The value has exactly one source.
+`KIT_VERSION` is an exported constant whose value comes from
+`packages/ui/package.json` via a direct JSON import at build time. There is
+no sync script, no codegen step, and no pre-commit hook. The value has
+exactly one source.
 
 **Caveat to record explicitly:** `@wright/ui` assumes Vite/SvelteKit-style JSON
 module support in the consumer. Every intended consumer satisfies this today.
@@ -122,6 +123,12 @@ renders a new strip directly above `.wf-phone-tabbar`:
 The strip is a single line with `·` separators. It belongs to AppShell's
 grid, so the page-content area shrinks by the strip's height — the tabbar
 remains anchored at the bottom edge.
+
+**When there is no mobile tabbar** (i.e. `nav` is empty or contains no items
+visible on mobile): the strip still renders, pinned to the bottom edge of
+the viewport in the row the tabbar would otherwise occupy. The strip's
+presence is governed by `meta`, not by the tabbar. This matches the goal
+that version info is visible on every page regardless of nav shape.
 
 ## Rendering contract (locked)
 
@@ -184,9 +191,13 @@ Three places change to make this the standard for every new app:
 
 ## Accessibility
 
-- The desktop block is wrapped in `<div role="contentinfo">` so it surfaces
-  as a landmark in screen reader rotors.
-- The mobile strip uses the same role.
+- Both the desktop block and the mobile strip render as plain styled text
+  inside generic `<div>` elements — **no** `role="contentinfo"`, no
+  `<footer>` element, no landmark. The version string is informational and
+  does not earn rotor-level prominence; using `contentinfo` on both would
+  also create duplicate page-level landmarks, which is an anti-pattern.
+- Screen readers reach the text in linear reading order, which is what's
+  needed for this content.
 - Text colors meet WCAG AA against `var(--surface)` and `var(--bg)` since
   they use existing `text-muted` / `text-subtle` tokens that already pass.
 
