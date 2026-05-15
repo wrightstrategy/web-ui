@@ -15,10 +15,17 @@
     badges?: Snippet;
     actions?: Snippet;
     tabs?: Snippet;
+    /** Optional suffix joined to the document title with " · ". Apps that
+        want a global suffix can set it on PageHeader instances. */
+    titleSuffix?: string;
   };
 
-  let { title, crumbs = [], badges, actions, tabs }: Props = $props();
+  let { title, crumbs = [], badges, actions, tabs, titleSuffix }: Props = $props();
 </script>
+
+<svelte:head>
+  <title>{titleSuffix ? `${title} · ${titleSuffix}` : title}</title>
+</svelte:head>
 
 <header class="wf-topbar">
   {#if crumbs.length > 0}

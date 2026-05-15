@@ -1,15 +1,14 @@
 <script lang="ts">
   import { Badge, Button, Card, Modal, PageHeader, Table, toast } from '@wright/ui';
-  import { Plus, Search } from '@lucide/svelte';
+  import { Archive, Search } from '@lucide/svelte';
 
   let modalOpen = $state(false);
 
-  function showWelcomeToast() {
-    toast.success('Welcome to the template', 'This is a Wright UI smoke test.');
-  }
-
+  // Archive demo: opens a confirmation Modal, then fires a Toast on confirm.
+  // The whole flow demonstrates Modal + Toast together — there's no need
+  // for a separate "Toast" button.
   function archive() {
-    toast.success('Archived', 'Document moved to archive.');
+    toast.success('Archived', 'Rivian Purchase Agreement moved to archive.');
     modalOpen = false;
   }
 
@@ -23,8 +22,7 @@
 <PageHeader title="Overview" crumbs={[{ label: 'Template' }, { label: 'Overview' }]}>
   {#snippet actions()}
     <Button tone="ghost"><Search size={14} /> Search</Button>
-    <Button onclick={() => (modalOpen = true)}>Open modal</Button>
-    <Button tone="primary" onclick={showWelcomeToast}><Plus size={14} /> Toast</Button>
+    <Button onclick={() => (modalOpen = true)}><Archive size={14} /> Archive</Button>
   {/snippet}
 </PageHeader>
 

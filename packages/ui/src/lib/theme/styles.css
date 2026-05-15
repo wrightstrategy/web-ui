@@ -108,6 +108,12 @@
   min-height: 36px;
 }
 .wf-nav a:hover { background: var(--surface-raised); color: var(--text); }
+.wf-nav a:focus-visible {
+  outline: none;
+  background: var(--surface-raised);
+  color: var(--text);
+  box-shadow: var(--focus-ring);
+}
 .wf-nav a .wf-nav-icon { width: 16px; height: 16px; flex: 0 0 auto; color: var(--text-subtle); }
 .wf-nav a.active { color: var(--text); background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .wf-nav a.active .wf-nav-icon { color: var(--accent); }
@@ -626,6 +632,17 @@ select.wf-select.err:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--dang
   border-bottom-color: var(--accent);
 }
 .wf-tabs .tab:hover:not(.active) { color: var(--text); }
+.wf-tabs .tab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+}
+.wf-phone-tabbar .wf-tab:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
 
 /* ---------- Modal ---------- */
 .wf-modal-shell {
