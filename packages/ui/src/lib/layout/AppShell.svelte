@@ -23,6 +23,13 @@
     desktopOnly?: boolean;
     items: NavItem[];
   };
+
+  export type AppMeta = {
+    /** Human-readable display name, e.g. "Template", "Inbox". */
+    name: string;
+    /** Semver string with no leading 'v', e.g. "1.2.3". */
+    version: string;
+  };
 </script>
 
 <script lang="ts">
@@ -30,10 +37,11 @@
     brand?: Snippet;
     nav?: NavSection[];
     foot?: Snippet;
+    meta?: AppMeta;
     children?: Snippet;
   };
 
-  let { brand, nav = [], foot, children }: Props = $props();
+  let { brand, nav = [], foot, meta, children }: Props = $props();
 
   const sidebarSections = $derived(nav.filter((s) => !s.mobileOnly));
 

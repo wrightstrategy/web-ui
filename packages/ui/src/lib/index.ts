@@ -18,6 +18,6 @@ export { KIT_VERSION } from './version.js';
 export { toast } from './stores/toast.svelte.js';
 export type { Toast, ToastAction, ToastInput, ToastTone } from './stores/toast.svelte.js';
 
-export type { NavIcon, NavItem, NavSection } from './layout/AppShell.svelte';
+export type { AppMeta, NavIcon, NavItem, NavSection } from './layout/AppShell.svelte';
 export type { Crumb } from './layout/PageHeader.svelte';
 export type { TabBadgeTone, TabItem } from './components/Tabs.svelte';
