@@ -89,6 +89,9 @@ Every recipe ships through this list before merge:
 - [ ] No horizontal scroll at 375px.
 - [ ] View Transitions enabled — they live in the root `+layout.svelte`
       via the kit's AppShell snippet structure, so this is automatic.
+- [ ] `AppShell` receives a `meta={{ name, version }}` prop sourced from
+      `package.json`. The desktop sidebar shows app name + app version +
+      kit version; the mobile strip above the tabbar shows the same line.
 
 ## Pinned conventions (these silently break otherwise)
 
@@ -183,6 +186,10 @@ wastes server work and triggers cache churn.
   `children` snippets plus a structured `nav: NavSection[]` array.
   Sections support `mobileOnly` and `desktopOnly` flags. Icons are
   `@lucide/svelte` components passed by reference, not snippets.
+  **Always pass `meta={{ name, version }}` — `meta.version` should be
+  read from the app's own `package.json` via a JSON import.** The kit
+  appends its own version (`ui v<KIT_VERSION>`) automatically; you
+  don't pass it. The template wires this for you; don't remove it.
 - **`<PageHeader title=...>`** is on every page. It sets `<title>` via
   `<svelte:head>`, renders the topbar with crumbs / title / badges /
   actions / tabs slots. The title prop drives both the `<h1>` and the
