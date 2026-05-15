@@ -1,7 +1,11 @@
 <script lang="ts" module>
   import type { Component, Snippet } from 'svelte';
 
-  export type NavIcon = Component<{ size?: number | string; class?: string }>;
+  // Component generic is loose intentionally — third-party icon libraries
+  // (lucide-svelte, @lucide/svelte, heroicons) all use different bindings /
+  // slots signatures. Apps pass icons that accept `size` and `class`.
+  // biome-ignore lint/suspicious/noExplicitAny: cross-library icon shape
+  export type NavIcon = Component<{ size?: number | string; class?: string }, any, any>;
 
   export type NavItem = {
     href: string;
