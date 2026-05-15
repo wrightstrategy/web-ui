@@ -2,6 +2,7 @@
   import '../app.css';
   import { page } from '$app/stores';
   import { AppShell, ToastViewport, type NavSection } from '@wright/ui';
+  import pkg from '../../package.json' with { type: 'json' };
   import {
     Home,
     Inbox,
@@ -13,6 +14,8 @@
   } from '@lucide/svelte';
 
   let { children } = $props();
+
+  const meta = { name: 'Template', version: pkg.version };
 
   const nav: NavSection[] = $derived([
     {
@@ -59,7 +62,7 @@
   ]);
 </script>
 
-<AppShell {nav}>
+<AppShell {nav} {meta}>
   {#snippet brand()}
     <div style="display: flex; align-items: center; gap: 12px;">
       <span
