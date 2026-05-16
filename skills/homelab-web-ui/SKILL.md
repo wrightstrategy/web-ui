@@ -1,12 +1,12 @@
 ---
 name: homelab-web-ui
-description: Use when scaffolding a new homelab web app or building/modifying any page inside a SvelteKit project that consumes `@wright/ui`. Covers the canonical scaffolder command, the seven page recipes with their file locations, the SvelteKit render-mode decision tree (default vs `csr = false` vs `prerender`), the mobile-first checklist, the pinned Vite + Superforms conventions that silently break otherwise, and the AppShell / PageHeader / theme-token rules.
+description: Use when scaffolding a new homelab web app or building/modifying any page inside a SvelteKit project that consumes `@wright/ui`. Covers the canonical scaffolder command, the six page recipes with their file locations, the SvelteKit render-mode decision tree (default vs `csr = false` vs `prerender`), the mobile-first checklist, the pinned Vite + Superforms conventions that silently break otherwise, and the AppShell / PageHeader / theme-token rules.
 ---
 
 # `homelab-web-ui`
 
 The primary skill for building homelab web UIs on the Wright family kit.
-Every page should map to one of the seven recipes in `templates/app`,
+Every page should map to one of the six recipes in `templates/app`,
 every form must follow the pinned conventions below, and every new app
 should be scaffolded — not hand-rolled.
 
@@ -51,7 +51,6 @@ lives in `templates/app/src/routes/...`.
 | Multi-form settings | `/settings` | `routes/settings/` | Three independent Superforms, named actions |
 | Async / job status | `/operations/[id]` | `routes/operations/[id]/` | `depends()` + `invalidate()` polling |
 | Mobile-first triage | `/triage` | `routes/triage/` | One card, three bottom buttons, ≥52px tap targets |
-| Login | `/login` | `routes/login/` | Stub auth, plain form (no Superforms), `requireSession()` helper |
 
 If no recipe fits, start a sketch and surface the gap. Don't synthesize
 a new page shape from primitives if a closer fit exists in another
@@ -64,7 +63,7 @@ SvelteKit pages run in one of three modes. Pick deliberately.
 | Mode | Setting | When to use |
 |---|---|---|
 | **Default** (SSR + CSR) | nothing | Anything interactive: forms, dashboards, polling, modals |
-| **`csr = false`** | `export const csr = false` in `+page.ts` or `+page.server.ts` | Pure read views with no client state — table pages, error pages, the login screen |
+| **`csr = false`** | `export const csr = false` in `+page.ts` or `+page.server.ts` | Pure read views with no client state — table pages, error pages |
 | **`prerender`** | `export const prerender = true` | Static content that's the same for every visitor — marketing, docs |
 
 `csr = false` is not just a perf knob — it's a *no-JS contract*. Verify
@@ -138,8 +137,6 @@ toasts). The scaffolder ships this config; don't remove it.
 - **Action returns `{ <formName> }`** matching the page's
   `data.<formName>` property. That's how the result threads through
   `$page.form` to the right superForm.
-- **Login is the canonical "tiny form" escape hatch** — plain server
-  action, no Superforms, inline error on failure, redirect on success.
 
 ### Polling
 
@@ -177,6 +174,29 @@ wastes server work and triggers cache churn.
 - **Mono / display fonts.** `var(--font-mono)` is IBM Plex Mono;
   `var(--font-display)` is IBM Plex Sans Condensed. Use the `.mono`
   utility class for in-line monospace.
+
+## Auth via Traefik
+
+Every homelab app runs behind Traefik → TinyAuth → Pocket ID. The kit reads `Remote-*` headers in `hooks.server.ts` and exposes the identity as `event.locals.user`. The template's root `+layout.server.ts` calls `requireUser(event)` so the whole app is gated by default.
+
+In a `+page.server.ts`:
+
+```ts
+import { error } from '@sveltejs/kit';
+import { requireUser } from '$lib/server/auth';
+
+export const load = async (event) => {
+  const user = requireUser(event);          // 401 if no identity
+  if (!user.groups.includes('admins')) error(403);
+  // ...
+};
+```
+
+For optional access (rare), `getUser(event)` returns `User | null` — import it separately when needed.
+
+Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only when `NODE_ENV !== 'production'`.
+
+Deployment invariants: NetworkPolicy must restrict ingress to Traefik, and Traefik must scrub client-supplied `Remote-*` headers before ForwardAuth. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for details.
 
 ## Layout primitives
 
