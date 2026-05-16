@@ -196,6 +196,18 @@ For optional access (rare), `getUser(event)` returns `User | null` — import it
 
 Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only under `bun run dev` (Vite's `dev` flag is true there; false in `bun run preview` and production builds).
 
+### Choose an auth tier
+
+Every app declares its auth tier in `src/lib/server/auth-policy.ts`. The kit ships `mode: 'authenticated'`. Edit the file to switch.
+
+- **No Auth** — `mode: 'none'`. Internal/low-risk apps where identity isn't required. The app may still see `event.locals.user` if Traefik provided headers, but it must not require it. `data.user` is `User | null` in the layout; render it conditionally.
+
+- **Authenticated (default)** — `mode: 'authenticated'`. Any valid Pocket ID user may access the app. The root layout 401s without identity.
+
+- **Authorized** — `mode: 'authorized'` plus at least one of `allowedGroups`, `allowedUsers`, `allowedSubs`. The root layout 401s without identity and 403s without a matching allowlist entry. With all three allowlists empty, the policy fails closed (403 for any user) — that's a configuration error and is intentional.
+
+Match against `user.sub` (stable OIDC subject) for permanent allowlists, `user.username` for human-readable allowlists, or `user.groups` for group-based access.
+
 Deployment invariants: NetworkPolicy must restrict ingress to Traefik, and Traefik must scrub client-supplied `Remote-*` headers before ForwardAuth. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for details.
 
 ## Layout primitives
