@@ -1,6 +1,6 @@
 ---
 name: homelab-web-backend-bridge
-description: Use when a SvelteKit app needs to talk to a backend service (FastAPI, Hono, anything HTTP). One rule: SvelteKit is the public face, the backend is internal. Calls happen server-side from `load`/actions, never browser-to-backend. Covers the typed `apiFetch` wrapper, Zod boundary validation, the error envelope shape, session-cookie forwarding, and conservative timeout/retry defaults.
+description: Use when a SvelteKit app needs to talk to a backend service (FastAPI, Hono, anything HTTP). One rule: SvelteKit is the public face, the backend is internal. Calls happen server-side from `load`/actions, never browser-to-backend. Covers the typed `apiFetch` wrapper, Zod boundary validation, the error envelope shape, explicit identity forwarding when a backend needs it, and conservative timeout/retry defaults.
 ---
 
 # `homelab-web-backend-bridge`
@@ -16,8 +16,7 @@ server-side, with a typed boundary.
   directly.
 - The backend can live on a private network, behind WireGuard, or on
   localhost without ever needing public exposure.
-- Session/auth cookies and headers stay server-side. The browser sees
-  only SvelteKit endpoints.
+- The backend trusts SvelteKit-originated calls (network-isolated by NetworkPolicy; SvelteKit is the only client). It does not receive user identity by default; the SvelteKit route handler is the auth boundary.
 - Boundary validation with Zod catches upstream schema drift at the
   edge instead of letting bad data poison the page.
 
@@ -27,9 +26,8 @@ Every consuming app gets one small wrapper. This is the minimal version:
 
 ```ts
 // src/lib/server/api.ts
-import { error, type Cookies } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { z } from 'zod';
-import { SESSION_COOKIE } from './auth';
 
 // Internal-only base URL. Set via env or hardcode the cluster DNS name.
 const API_BASE = process.env.API_BASE ?? 'http://paperless:8000';
@@ -46,7 +44,6 @@ export type ApiErrorBody = {
 };
 
 export type ApiOptions = RequestInit & {
-  event?: { cookies: Cookies };
   /** Override the default 5s timeout. Keep it short. */
   timeoutMs?: number;
 };
@@ -63,12 +60,6 @@ export async function apiFetch<T>(
   try {
     const headers = new Headers(init.headers);
     headers.set('accept', 'application/json');
-
-    // Forward the session cookie so the upstream can identify the user.
-    if (init.event) {
-      const session = init.event.cookies.get(SESSION_COOKIE);
-      if (session) headers.set('cookie', `${SESSION_COOKIE}=${session}`);
-    }
 
     const res = await fetch(`${API_BASE}${path}`, {
       ...init,
@@ -97,28 +88,24 @@ export async function apiFetch<T>(
 // src/routes/queue/[id]/+page.server.ts
 import { z } from 'zod';
 import { apiFetch } from '$lib/server/api';
-import { requireSession } from '$lib/server/auth';
+import { requireUser } from '$lib/server/auth';
 import type { PageServerLoad } from './$types';
 
 const DocSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  status: z.enum(['needs_review', 'auto', 'error']),
-  confidence: z.number().int().min(0).max(100),
+  // ... other fields ...
 });
 
 export const load: PageServerLoad = async (event) => {
-  requireSession(event); // redirect to /login if no session
-
-  const doc = await apiFetch(
-    `/api/documents/${event.params.id}`,
-    DocSchema,
-    { event }
-  );
-
+  const user = requireUser(event);
+  const doc = await apiFetch(`/api/docs/${event.params.id}`, DocSchema, {
+    headers: { 'X-Internal-User': user.sub },
+  });
   return { doc };
 };
 ```
+
+`X-Internal-User` is a convention taught by this skill, not a kit constant. The backend treats it as audit metadata, not authorization input — authorization is enforced at the SvelteKit layer by `requireUser` + group checks.
 
 If the upstream returns a 404, `error(404, ...)` throws and SvelteKit
 renders the closest `+error.svelte`. If the upstream returns a 500 or
@@ -143,12 +130,8 @@ when it needs to branch.
 
 ## Auth & headers
 
-- The session cookie (`SESSION_COOKIE`, from `$lib/server/auth`) is
-  forwarded automatically via `apiFetch({ event })`.
-- Custom headers go in `init.headers` — the wrapper merges them with
-  `accept: application/json` and the forwarded cookie.
-- Never read the cookie in `+page.svelte` and pass it through props
-  manually. The server-side wrapper is the single forwarding point.
+- Backend services receive no identity header by default. Apps that need to log "who did this" in the backend forward `X-Internal-User: <user.sub>` explicitly from the SvelteKit route handler.
+- Never compute identity in `+page.svelte` and pass it as a prop. The browser is a fundamentally untrusted client; identity is established by `hooks.server.ts` and propagated through `event.locals`.
 
 ## Timeouts & retries
 
