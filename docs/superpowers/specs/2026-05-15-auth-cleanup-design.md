@@ -340,7 +340,8 @@ Developers copy `.env.example` → `.env.local` (SvelteKit's default Vite setup 
   > In a `+page.server.ts`:
   >
   > ```ts
-  > import { requireUser, getUser } from '$lib/server/auth';
+  > import { error } from '@sveltejs/kit';
+  > import { requireUser } from '$lib/server/auth';
   >
   > export const load = async (event) => {
   >   const user = requireUser(event);          // 401 if no identity
@@ -349,7 +350,7 @@ Developers copy `.env.example` → `.env.local` (SvelteKit's default Vite setup 
   > };
   > ```
   >
-  > For optional access (rare), `getUser(event)` returns `User | null`.
+  > For optional access (rare), `getUser(event)` returns `User | null` — import it separately when needed.
   >
   > Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only when `NODE_ENV !== 'production'`.
   >

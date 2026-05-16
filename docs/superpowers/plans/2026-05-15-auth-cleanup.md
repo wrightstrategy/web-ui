@@ -198,25 +198,25 @@ declare global {
 export {};
 ```
 
-- [ ] **Step 3: Verify svelte-check**
+- [ ] **Step 3: Verify svelte-check fails ONLY in `/login`**
 
 ```bash
 cd /Users/scott/Projects/web-ui/templates/app && bun run check
 ```
 
-Expected: passes with 0 errors. (Existing template references to `SESSION_COOKIE`, `requireSession`, etc. are about to break in Task 3+, but at this point nothing else consumes them — the `/login` route still imports them, so it WILL show errors. **This is expected and accepted; do not fix here.** The errors will resolve when Task 6 deletes the `/login` route.)
+Expected: **fails only in `templates/app/src/routes/login/+page.server.ts`** with errors naming the now-gone imports (`clearSession`, `getSession`, `redirectAfterLogin`, `setSession`). Every other file passes. This is the "broken window" state the plan deliberately accepts; Task 6 deletes `/login` and the check goes fully clean then.
 
-If `bun run check` shows errors only in `templates/app/src/routes/login/+page.server.ts` (which imports `clearSession`, `getSession`, `redirectAfterLogin`, `setSession` from `$lib/server/auth`), that's the expected state — move on. Errors elsewhere mean something's wrong; stop and investigate.
+Stop and investigate if: errors appear in any file *other* than `routes/login/+page.server.ts`, or `routes/login/+page.server.ts` doesn't fail. Either is a sign something diverged from the plan.
 
-- [ ] **Step 4: Verify build (also expected to fail in /login)**
+- [ ] **Step 4: Verify build fails ONLY in `/login`**
 
 ```bash
 cd /Users/scott/Projects/web-ui/templates/app && bun run build
 ```
 
-Expected: build **fails** at the `/login` route compilation. The error message names the missing imports from `$lib/server/auth`. **This is expected and accepted.** It will be resolved by Task 6 (delete `/login`).
+Expected: **build fails at the `/login` route compilation** with the same missing-import errors as Step 3. This is expected and resolves at Task 6.
 
-If the build fails for any OTHER reason (errors NOT in `routes/login/`), stop and investigate.
+Stop and investigate if the build fails for any reason outside `routes/login/`.
 
 - [ ] **Step 5: Commit**
 
@@ -720,7 +720,8 @@ Every homelab app runs behind Traefik → TinyAuth → Pocket ID. The kit reads 
 In a `+page.server.ts`:
 
 ```ts
-import { requireUser, getUser } from '$lib/server/auth';
+import { error } from '@sveltejs/kit';
+import { requireUser } from '$lib/server/auth';
 
 export const load = async (event) => {
   const user = requireUser(event);          // 401 if no identity
@@ -729,7 +730,7 @@ export const load = async (event) => {
 };
 ```
 
-For optional access (rare), `getUser(event)` returns `User | null`.
+For optional access (rare), `getUser(event)` returns `User | null` — import it separately when needed.
 
 Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only when `NODE_ENV !== 'production'`.
 
@@ -800,41 +801,86 @@ Now perform these four specific changes:
 - The backend trusts SvelteKit-originated calls (network-isolated by NetworkPolicy; SvelteKit is the only client). It does not receive user identity by default; the SvelteKit route handler is the auth boundary.
 ```
 
-**Change B — `apiFetch` code sample:** find the `apiFetch` function definition and replace the entire function (including its imports, `ApiFetchOptions` type, and the cookie-forwarding `if (init.event)` block) with this clean version:
+**Change B — `apiFetch` code sample:** the entire sample (lines 28–92 in the pre-edit file, the fenced ```ts block under "Every consuming app gets one small wrapper.") is replaced with this version. The Zod boundary contract (`schema: z.ZodType<T>` parameter, `schema.parse(raw)` at the boundary), the timeout/abort logic, and the error-envelope unwrap all stay. Only the `Cookies` import, the `SESSION_COOKIE` import, the `event` field on `ApiOptions`, and the cookie-forwarding `if (init.event)` block come out.
 
 ```ts
+// src/lib/server/api.ts
 import { error } from '@sveltejs/kit';
+import { z } from 'zod';
 
-type ApiFetchOptions = {
-  method?: string;
-  headers?: HeadersInit;
-  body?: BodyInit;
-  // Add timeout/retry options as the skill currently has them; just
-  // do NOT add an `event` field. Identity forwarding is explicit at
-  // the call site (see below).
+// Internal-only base URL. Set via env or hardcode the cluster DNS name.
+const API_BASE = process.env.API_BASE ?? 'http://paperless:8000';
+
+const DEFAULT_TIMEOUT_MS = 5000;
+
+export type ApiErrorBody = {
+  /** Short machine-readable code, e.g. "not_found", "validation_failed". */
+  code?: string;
+  /** Human-readable message shown to users only as a fallback. */
+  message?: string;
+  /** Optional structured detail — field errors, retry hints, etc. */
+  detail?: unknown;
 };
 
-export async function apiFetch(path: string, init: ApiFetchOptions = {}) {
-  const headers = new Headers(init.headers);
-  // ... rest of the existing implementation (timeout, retry, Zod
-  // boundary parsing, error envelope unwrap) stays the same.
+export type ApiOptions = RequestInit & {
+  /** Override the default 5s timeout. Keep it short. */
+  timeoutMs?: number;
+};
+
+export async function apiFetch<T>(
+  path: string,
+  schema: z.ZodType<T>,
+  init: ApiOptions = {}
+): Promise<T> {
+  const controller = new AbortController();
+  const timeoutMs = init.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const headers = new Headers(init.headers);
+    headers.set('accept', 'application/json');
+
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      headers,
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const body = (await res.json().catch(() => null)) as ApiErrorBody | null;
+      // Surface the upstream code so the SvelteKit error page or form
+      // handler can branch on it. Never expose the full upstream URL.
+      error(res.status, body?.message ?? `Upstream returned ${res.status}.`);
+    }
+
+    const raw = await res.json();
+    return schema.parse(raw); // Zod boundary check
+  } finally {
+    clearTimeout(timer);
+  }
 }
 ```
 
-(Preserve the surrounding timeout/retry/Zod machinery — only the cookie-forwarding lines and the `event` parameter come out.)
-
-**Change C — `+page.server.ts` example:** find the block that imports `requireSession` and calls `requireSession(event)`. Replace with:
+**Change C — `+page.server.ts` example:** find the block that imports `requireSession` and calls `requireSession(event)` (the existing example uses `DocSchema = z.object(...)` and `apiFetch(path, DocSchema, init)`). Replace with the same shape but using `requireUser` and an explicit identity header. Keep the Zod schema argument — it's the boundary contract.
 
 ```ts
-import { requireUser } from '$lib/server/auth';
+// src/routes/queue/[id]/+page.server.ts
+import { z } from 'zod';
 import { apiFetch } from '$lib/server/api';
+import { requireUser } from '$lib/server/auth';
+import type { PageServerLoad } from './$types';
 
-export const load = async (event) => {
+const DocSchema = z.object({
+  id: z.string(),
+  // ... other fields ...
+});
+
+export const load: PageServerLoad = async (event) => {
   const user = requireUser(event);
-  const data = await apiFetch('/api/things', {
+  const doc = await apiFetch(`/api/docs/${event.params.id}`, DocSchema, {
     headers: { 'X-Internal-User': user.sub },
   });
-  return { data };
+  return { doc };
 };
 ```
 
@@ -1127,24 +1173,25 @@ cd /Users/scott/Projects/web-ui/templates/app && bun run build
 
 Expected: builds successfully, no errors.
 
-- [ ] **Step 3: Dev user surfaces in foot (with WRIGHT_DEV_USER set)**
+- [ ] **Step 3: Dev user surfaces in foot (with WRIGHT_DEV_USER set, dev mode)**
+
+The dev-fallback is gated on Vite's `dev === true` flag, which is **only** true under `bun run dev` — not `bun run preview` (preview serves the production build where `dev === false`). Use `bun run dev` for this probe.
 
 ```bash
 cd /Users/scott/Projects/web-ui/templates/app
-WRIGHT_DEV_USER=scott WRIGHT_DEV_GROUPS=admins bun run preview &
-PREVIEW_PID=$!
-sleep 3
+WRIGHT_DEV_USER=scott WRIGHT_DEV_GROUPS=admins bun run dev &
+sleep 4
 echo "--- foot identity ---"
 curl -s http://localhost:5173/ | grep -oE '>scott<|>scott@dev.local<|wf-version|wf-shell-version-strip' | sort -u
 echo "--- no /login link ---"
 curl -s http://localhost:5173/ | grep -c 'href="/login"' || echo "0 (expected)"
-pkill -f 'vite preview' || true
+pkill -f 'vite dev' || true
 sleep 1
 ```
 
 Expected:
 - foot identity probe shows `>scott<` (name) and `>scott@dev.local<` (email).
-- `wf-foot-row` and `wf-version-block` also appear (the AppShell version-display feature is unaffected).
+- `wf-foot-row` and `wf-shell-version-strip` also appear (the AppShell version-display feature is unaffected).
 - `href="/login"` count is `0` — nav no longer points at the deleted route.
 
 - [ ] **Step 4: Missing identity 401s (no WRIGHT_DEV_USER, no Remote-* headers)**
@@ -1182,21 +1229,29 @@ sleep 1
 
 Expected: both `>Alice Doe<` and `>alice@example.com<` appear in the rendered HTML. This is exactly the case the trust-boundary section warns about — in production, Traefik's scrub middleware prevents a client from doing this. Locally (no Traefik in front) it works, which is the whole point of the dev workflow.
 
-- [ ] **Step 6: Codebase grep for stale references**
+- [ ] **Step 6: Grep the surfaces that must be clean**
+
+Several files **intentionally** contain stale-auth strings as historical or breaking-change text and must NOT be grepped: this plan, the auth-cleanup spec, the `CHANGELOG.md`, and the archived `design/` directory. Scope the grep to the surfaces that drive runtime behavior and the long-lived docs that should be free of stale references:
 
 ```bash
 cd /Users/scott/Projects/web-ui
-echo "--- stale auth refs ---"
+echo "--- runtime template code ---"
 grep -rnE 'requireSession|SESSION_COOKIE|wf_session|redirectToLogin|redirectAfterLogin|setSession|clearSession|getSession' \
-  --include='*.ts' --include='*.svelte' --include='*.md' \
+  --include='*.ts' --include='*.svelte' \
   --exclude-dir=node_modules \
   --exclude-dir=.svelte-kit \
   --exclude-dir=build \
-  --exclude-dir=design \
-  . 2>/dev/null
+  templates/
+
+echo "--- long-lived docs ---"
+grep -nE 'requireSession|SESSION_COOKIE|wf_session|redirectToLogin|redirectAfterLogin|Auth Stub|stub auth' \
+  skills/homelab-web-ui/SKILL.md \
+  skills/homelab-web-backend-bridge/SKILL.md \
+  docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md \
+  docs/migrations/scan-router.md
 ```
 
-Expected: empty. The `design/` directory is excluded because it contains an archived strategy doc with historical references; those don't drive runtime behavior. If anything else matches outside `design/`, fix it.
+Expected: both greps return empty output. Matches in `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md`, `docs/superpowers/plans/2026-05-15-auth-cleanup.md`, `CHANGELOG.md`, or `design/` are expected and not regressed by this plan — those files are not scanned.
 
 - [ ] **Step 7: Confirm git log**
 
