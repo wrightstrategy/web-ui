@@ -117,12 +117,17 @@
       <UserCircle size={16} />
     </div>
     <div class="wf-grow">
-      <div style="font-size: 13px; color: var(--text);">
-        {data.user.name || data.user.username}
-      </div>
-      <div class="mono" style="font-size: 11px; color: var(--text-subtle);">
-        {data.user.email || data.user.username}
-      </div>
+      {#if data.user}
+        <div style="font-size: 13px; color: var(--text);">
+          {data.user.name || data.user.username}
+        </div>
+        <div class="mono" style="font-size: 11px; color: var(--text-subtle);">
+          {data.user.email || data.user.username}
+        </div>
+      {:else}
+        <div style="font-size: 13px; color: var(--text);">Internal</div>
+        <div class="mono" style="font-size: 11px; color: var(--text-subtle);">No auth</div>
+      {/if}
     </div>
   {/snippet}
 
