@@ -167,7 +167,7 @@ The template demonstrates:
 - Form actions with Superforms + Zod
 - A "simple form action without Superforms" escape hatch for tiny pages
 - A server-side fetch to a stub Python backend (illustrates the backend bridge)
-- Stub auth (session cookie, redirect helpers — see §"Auth Stub")
+- Auth via Traefik + TinyAuth + Pocket ID (see §"Auth via Traefik")
 - View Transitions in the root `+layout.svelte`
 - One opt-in PWA configuration commented out, ready to enable
 
@@ -212,7 +212,7 @@ Teaches agents:
 - Typed responses (OpenAPI codegen optional; hand-typed Zod schemas acceptable).
 - Shared error envelope shape.
 - Server-side fetch from `load`/actions (avoid CORS).
-- Auth header / session cookie passing.
+- Explicit identity forwarding (e.g. `X-Internal-User: user.sub`) when a backend needs identity. No automatic cookie/session forwarding — SvelteKit is the auth boundary.
 
 ### `homelab-web-component-add` (helper)
 
@@ -241,21 +241,18 @@ Enable PWA only when **at least one** of:
 
 scan-router → yes. paperless-enricher → maybe. sentinel admin → no.
 
-## Auth Stub (intentionally thin)
+## Auth via Traefik
 
-The kit ships **conventions, not infrastructure**:
-- Session cookie shape (name, format expectation)
-- `requireSession()` helper for `+page.server.ts` / `+layout.server.ts`
-- Redirect helpers (`redirectToLogin`, `redirectAfterLogin`)
-- Layout convention for login pages
+The kit consumes the homelab's SSO infrastructure (Traefik → TinyAuth → Pocket ID OIDC) and ships **no** auth machinery of its own.
 
-The kit does **not** ship:
-- Password hashing
-- OAuth flows
-- Session storage
-- Real identity provider integration
+- `hooks.server.ts` reads TinyAuth's `Remote-Sub`, `Remote-User`, `Remote-Email`, `Remote-Name`, `Remote-Groups` headers and populates `event.locals.user` with a typed `User`.
+- `requireUser(event)` and `getUser(event)` in `$lib/server/auth` are the only public helpers; both return the same `User` shape.
+- The root `+layout.server.ts` calls `requireUser` so every page in an app is gated by default.
+- Local dev: set `WRIGHT_DEV_USER` (and optionally `WRIGHT_DEV_GROUPS`) in `.env.local`. The dev fallback only fires when `dev === true`.
 
-When real auth is needed, it comes from the homepage/SSO project. The stub gives apps a consistent shape to slot into that project later.
+The kit does **not** ship: a login form, a logout button, a session cookie, an OAuth client, or any password handling. All of that lives in the homelab cluster (TinyAuth + Pocket ID).
+
+Trust rests on two deployment invariants enforced in the homelab manifests: NetworkPolicy restricting Pod ingress to Traefik, and a Traefik Headers middleware that scrubs client-supplied `Remote-*` headers before ForwardAuth runs. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for the full trust-boundary write-up and the required middleware YAML.
 
 ## Quality Gate
 
