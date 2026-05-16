@@ -194,7 +194,7 @@ export const load = async (event) => {
 
 For optional access (rare), `getUser(event)` returns `User | null` — import it separately when needed.
 
-Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only when `NODE_ENV !== 'production'`.
+Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only under `bun run dev` (Vite's `dev` flag is true there; false in `bun run preview` and production builds).
 
 Deployment invariants: NetworkPolicy must restrict ingress to Traefik, and Traefik must scrub client-supplied `Remote-*` headers before ForwardAuth. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for details.
 
