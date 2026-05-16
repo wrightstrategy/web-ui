@@ -72,8 +72,9 @@ templates in `app/templates/`.
 **Out:**
 
 - Changing OCR / classification / routing logic.
-- Real auth. The kit's stub auth in `$lib/server/auth.ts` is enough
-  for v1; SSO comes from the homepage project later.
+- Custom auth. The kit consumes the homelab's Traefik + TinyAuth +
+  Pocket ID infrastructure via `event.locals.user`; scan-router
+  inherits this automatically. No app-level auth code to write.
 - An in-flight migration tool. scan-router is single-user; the old UI
   can be replaced wholesale.
 
@@ -82,9 +83,9 @@ templates in `app/templates/`.
 - **No browser-to-FastAPI calls.** SvelteKit `load`/actions are the
   only callers. CORS shouldn't appear anywhere in this work.
 - **No-JS coherent fallback** for every page that doesn't strictly
-  need interactivity. The scan list, individual detail views, and
-  the login/settings pages should be functional via `curl`. Use
-  `export const csr = false` where it applies.
+  need interactivity. The scan list, individual detail views, and the settings page
+  should be functional via `curl` (with Traefik forwarding the
+  Remote-* headers). Use `export const csr = false` where it applies.
 - **Mobile-first** for the triage flow especially. Tap targets ≥44px
   (52px for primary triage actions). Test at 375px first.
 - **Pinned Vite + Superforms conventions are non-negotiable.** They
@@ -104,11 +105,11 @@ templates in `app/templates/`.
 
 1. From `~/Projects/web-ui/`, run
    `bun run create-app ~/Projects/scan-router/web`. The scaffold drops
-   you a complete SvelteKit app with all seven recipes pre-built —
+   you a complete SvelteKit app with all six recipes pre-built —
    start from there.
 
 2. Read `app/main.py` and `app/templates/*.html.j2` in scan-router.
-   Map each Jinja page to one of the seven recipes:
+   Map each Jinja page to one of the six recipes:
 
    | scan-router today | Kit recipe |
    |---|---|
