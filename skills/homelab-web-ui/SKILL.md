@@ -177,7 +177,7 @@ wastes server work and triggers cache churn.
 
 ## Auth via Traefik
 
-Every homelab app runs behind Traefik → TinyAuth → Pocket ID. The kit reads `Remote-*` headers in `hooks.server.ts` and exposes the identity as `event.locals.user`. The template's root `+layout.server.ts` calls `requireUser(event)` so the whole app is gated by default.
+Every homelab app runs behind Traefik → TinyAuth → Pocket ID. The kit reads `Remote-*` headers in `hooks.server.ts` and exposes the identity as `event.locals.user`. The template's root `+layout.server.ts` calls `requireAuthorizedUser(event, authPolicy)`, where `authPolicy` is declared in `src/lib/server/auth-policy.ts`, so the whole app is gated by the declared tier (default: `'authenticated'`).
 
 In a `+page.server.ts`:
 
