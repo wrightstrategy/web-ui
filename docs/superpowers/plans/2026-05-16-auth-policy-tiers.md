@@ -606,6 +606,8 @@ Expected:
 
 - [ ] **Step 3: Probe `mode: 'none'`**
 
+The next three probes (this step plus steps 4 and 5) temporarily edit `auth-policy.ts`. `bun run preview` serves the LAST-BUILT production bundle, which has the committed-default policy baked in — temporary source edits would be invisible to it. Use `bun run dev` instead, which serves from source and picks up edits via Vite HMR. `WRIGHT_DEV_USER=` is set empty inline so the dev-user fallback can't accidentally populate identity for tests that need a null user.
+
 Temporarily edit `templates/app/src/lib/server/auth-policy.ts` so the exported policy is:
 
 ```ts
@@ -622,11 +624,11 @@ Then probe:
 cd /Users/scott/Projects/web-ui/templates/app
 
 echo "=== 3: 'none' mode, no env, no headers (should 200, foot=Internal/No auth) ==="
-WRIGHT_DEV_USER= bun run preview 2>&1 &
+WRIGHT_DEV_USER= bun run dev 2>&1 &
 sleep 4
 curl -s -o /dev/null -w 'status=%{http_code}\n' http://localhost:5173/
 curl -s http://localhost:5173/ | grep -oE '>scott<|>Internal<|>No auth<' | sort -u
-pkill -f 'vite preview' 2>/dev/null
+pkill -f 'vite dev' 2>/dev/null
 sleep 2
 ```
 
@@ -655,11 +657,11 @@ export const authPolicy: AuthPolicy = {
 };
 ```
 
-Then probe:
+Then probe (using `bun run dev` for the same reason as Step 3):
 
 ```bash
 cd /Users/scott/Projects/web-ui/templates/app
-WRIGHT_DEV_USER= bun run preview 2>&1 &
+WRIGHT_DEV_USER= bun run dev 2>&1 &
 sleep 4
 
 echo "=== 4a: no identity (should 401) ==="
@@ -689,7 +691,7 @@ curl -s -o /dev/null -w 'status=%{http_code}\n' http://localhost:5173/ \
   -H 'Remote-User: alice' \
   -H 'Remote-Groups: viewers'
 
-pkill -f 'vite preview' 2>/dev/null
+pkill -f 'vite dev' 2>/dev/null
 sleep 2
 ```
 
@@ -721,14 +723,14 @@ export const authPolicy: AuthPolicy = {
 
 ```bash
 cd /Users/scott/Projects/web-ui/templates/app
-WRIGHT_DEV_USER= bun run preview 2>&1 &
+WRIGHT_DEV_USER= bun run dev 2>&1 &
 sleep 4
 echo "=== 5: 'authorized' with no allowlists (should 403 even with valid identity) ==="
 curl -s -o /dev/null -w 'status=%{http_code}\n' http://localhost:5173/ \
   -H 'Remote-Sub: sub-12345' \
   -H 'Remote-User: scott' \
   -H 'Remote-Groups: admins'
-pkill -f 'vite preview' 2>/dev/null
+pkill -f 'vite dev' 2>/dev/null
 sleep 2
 ```
 
@@ -742,7 +744,7 @@ git checkout -- templates/app/src/lib/server/auth-policy.ts
 git status
 ```
 
-Expected: clean working tree.
+Expected: clean working tree. **Confirm the revert before Step 6** — the final build below must run against the committed default policy, not a leftover temporary policy.
 
 - [ ] **Step 6: Final svelte-check + build**
 
@@ -751,7 +753,7 @@ cd /Users/scott/Projects/web-ui/templates/app && bun run check
 cd /Users/scott/Projects/web-ui/templates/app && bun run build
 ```
 
-Expected: `bun run check` → 0 errors, 4 pre-existing warnings; `bun run build` → `✔ done`.
+Expected: `bun run check` → 0 errors, 4 pre-existing warnings; `bun run build` → `✔ done`. The build's compiled output will reflect the committed default `mode: 'authenticated'` policy (since the reverts above restored the file).
 
 - [ ] **Step 7: Confirm git log**
 
