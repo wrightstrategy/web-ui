@@ -8,12 +8,11 @@
     Inbox,
     Settings,
     Activity,
-    LogIn,
     LayoutDashboard,
     UserCircle,
   } from '@lucide/svelte';
 
-  let { children } = $props();
+  let { children, data } = $props();
 
   const meta = { name: 'Template', version: pkg.version };
 
@@ -50,12 +49,6 @@
           label: 'Settings',
           icon: Settings,
           active: $page.url.pathname.startsWith('/settings'),
-        },
-        {
-          href: '/login',
-          label: 'Sign in',
-          icon: LogIn,
-          active: $page.url.pathname === '/login',
         },
       ],
     },
@@ -124,8 +117,12 @@
       <UserCircle size={16} />
     </div>
     <div class="wf-grow">
-      <div style="font-size: 13px; color: var(--text);">Scott</div>
-      <div class="mono" style="font-size: 11px; color: var(--text-subtle);">wrightfamily.org</div>
+      <div style="font-size: 13px; color: var(--text);">
+        {data.user.name || data.user.username}
+      </div>
+      <div class="mono" style="font-size: 11px; color: var(--text-subtle);">
+        {data.user.email || data.user.username}
+      </div>
     </div>
   {/snippet}
 
