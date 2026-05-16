@@ -96,8 +96,8 @@ The web-ui commits for this cleanup may be authored at any time, but consuming a
 | `templates/app/.env.example` | **Create**. Documents `WRIGHT_DEV_USER` and `WRIGHT_DEV_GROUPS`. |
 | `skills/homelab-web-ui/SKILL.md` | **Modify**. Delete the `/login` recipe map row (recipe count 7 → 6). Drop "the login screen" from the `csr=false` examples. Delete the "Login is the canonical 'tiny form' escape hatch" bullet. Add a new "Auth via Traefik" subsection. |
 | `skills/homelab-web-backend-bridge/SKILL.md` | **Modify**. Rewrite the auth/cookie-forwarding section (see §"Backend-bridge changes"). Update frontmatter description to drop "session-cookie forwarding." Change `requireSession` example to `requireUser`. |
-| `docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md` | **Modify**. Update the `requireSession()` reference to `requireUser()`. Add a one-line note that the homepage/SSO project shipped as Pocket ID via Traefik+TinyAuth. |
-| `docs/migrations/scan-router.md` | **Modify**. Drop the "login/settings pages should be functional via curl" wording — login isn't a page anymore. |
+| `docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md` | **Modify**. Replace stub-auth references across the template-demonstrates list, backend-bridge summary, and the full `Auth Stub` section with the Traefik+TinyAuth+Pocket ID posture. |
+| `docs/migrations/scan-router.md` | **Modify**. Replace stale stub-auth wording, drop login from the no-JS curl examples, and update "seven recipes" references to "six recipes." |
 | `CHANGELOG.md` | **Modify**. New entry under "Breaking changes." |
 
 ## The `User` type and helpers
