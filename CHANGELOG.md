@@ -6,6 +6,10 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## Unreleased
 
+### Added
+
+- Explicit auth policy tiers in the template (`none` / `authenticated` / `authorized`). The new `templates/app/src/lib/server/auth-policy.ts` declares the app's tier; the root layout enforces it via `requireAuthorizedUser`. Default is `mode: 'authenticated'` so a fresh scaffold behaves like the post-cleanup state. Apps switch to `'none'` for internal-only or `'authorized'` with `allowedGroups` / `allowedUsers` / `allowedSubs` for app-specific authorization. See the spec at `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` § "Auth tiers (follow-up)".
+
 ### Breaking changes (auth)
 
 - Stub cookie auth removed. `SESSION_COOKIE`, `Session`, `getSession`, `setSession`, `clearSession`, `requireSession`, `redirectToLogin`, and `redirectAfterLogin` are gone from `$lib/server/auth`.
