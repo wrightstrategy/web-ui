@@ -289,7 +289,7 @@ function parseGroups(raw: string | null): string[] {
 
 Notes for the implementer:
 - The `dev` import is Vite/SvelteKit's build-time flag. It's `true` in `bun run dev`, `false` in `bun run build` output. The whole dev-fallback branch is tree-shaken out of the production bundle.
-- `env` from `$env/dynamic/private` reads at runtime, so the env var works without restarting the dev server (unlike `$env/static/private`).
+- `env` from `$env/dynamic/private` reads at request time from the running server process's environment, not at build time (unlike `$env/static/private`, which inlines values at build). Changing the env var still requires restarting the dev server for the new value to take effect — Vite's `.env.local` hot-reload covers file edits, but a shell-exported `WRIGHT_DEV_USER` won't propagate into an already-running process.
 - The `name` fallback uses `||` (not `??`) so an empty-string `Remote-Name` falls back to `username`.
 
 - [ ] **Step 2: Verify svelte-check**
@@ -710,9 +710,11 @@ Delete those two lines entirely. The bullet above it (about Action returns) beco
 
 - [ ] **Step 6: Add a new "Auth via Traefik" subsection**
 
-Insert the following subsection. The natural placement is between `## Theme conventions` and `## Layout primitives` (roughly around line 165 in the post-edit file — find the boundary by reading the surrounding `## Theme conventions` and `## Layout primitives` headings):
+Insert the following subsection. The natural placement is between `## Theme conventions` and `## Layout primitives` (roughly around line 165 in the post-edit file — find the boundary by reading the surrounding `## Theme conventions` and `## Layout primitives` headings).
 
-```markdown
+The outer fence here uses four backticks so the inner triple-backtick `ts` block renders correctly; the four-backtick fence is plan-formatting only — copy the content *between* the outer fences (the actual Markdown body, including the inner ```` ```ts ... ``` ```` triple-backtick fence) into the skill file.
+
+````markdown
 ## Auth via Traefik
 
 Every homelab app runs behind Traefik → TinyAuth → Pocket ID. The kit reads `Remote-*` headers in `hooks.server.ts` and exposes the identity as `event.locals.user`. The template's root `+layout.server.ts` calls `requireUser(event)` so the whole app is gated by default.
@@ -735,7 +737,7 @@ For optional access (rare), `getUser(event)` returns `User | null` — import it
 Local dev: set `WRIGHT_DEV_USER=<name>` in `.env.local`. The kit fakes a dev user only when `NODE_ENV !== 'production'`.
 
 Deployment invariants: NetworkPolicy must restrict ingress to Traefik, and Traefik must scrub client-supplied `Remote-*` headers before ForwardAuth. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for details.
-```
+````
 
 - [ ] **Step 7: Verify the file**
 
