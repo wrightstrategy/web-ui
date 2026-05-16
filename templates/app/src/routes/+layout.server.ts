@@ -1,5 +1,6 @@
 import type { LayoutServerLoad } from './$types';
-import { requireUser } from '$lib/server/auth';
+import { requireAuthorizedUser } from '$lib/server/auth';
+import { authPolicy } from '$lib/server/auth-policy';
 
 export const load: LayoutServerLoad = (event) => {
   // Returns the full User including `groups`. Group names are not
@@ -7,5 +8,11 @@ export const load: LayoutServerLoad = (event) => {
   // "admins" / "family") so we ship them to the client for use in
   // group-gated UI. If a future app needs to hide group names from
   // the browser, narrow this to { sub, username, email, name }.
-  return { user: requireUser(event) };
+  //
+  // `user` may be null when authPolicy.mode === 'none'. Consumers
+  // (including +layout.svelte) must handle the nullable case.
+  return {
+    user: requireAuthorizedUser(event, authPolicy),
+    authMode: authPolicy.mode,
+  };
 };
