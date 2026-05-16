@@ -93,7 +93,6 @@ The web-ui commits for this cleanup may be authored at any time, but consuming a
 | `templates/app/src/routes/+layout.svelte` | **Modify**. Foot snippet reads `data.user.name \|\| data.user.username` and `data.user.email \|\| data.user.username`. Drop `LogIn` icon import and the `/login` nav item from the "System" section. |
 | `templates/app/src/routes/login/+page.server.ts` | **Delete**. |
 | `templates/app/src/routes/login/+page.svelte` | **Delete**. (Directory becomes empty and is removed.) |
-| `templates/app/src/lib/server/api.ts` | **Modify**. `apiFetch` loses its `event` / cookie-forwarding plumbing. Identity is forwarded explicitly when a backend needs it (see §"Backend-bridge changes"). |
 | `templates/app/.env.example` | **Create**. Documents `WRIGHT_DEV_USER` and `WRIGHT_DEV_GROUPS`. |
 | `skills/homelab-web-ui/SKILL.md` | **Modify**. Delete the `/login` recipe map row (recipe count 7 → 6). Drop "the login screen" from the `csr=false` examples. Delete the "Login is the canonical 'tiny form' escape hatch" bullet. Add a new "Auth via Traefik" subsection. |
 | `skills/homelab-web-backend-bridge/SKILL.md` | **Modify**. Rewrite the auth/cookie-forwarding section (see §"Backend-bridge changes"). Update frontmatter description to drop "session-cookie forwarding." Change `requireSession` example to `requireUser`. |
@@ -253,14 +252,16 @@ Becomes:
 
 Also in `+layout.svelte`: drop the `LogIn` icon import and the `/login` nav item from the `System` section. The `System` section keeps `/settings` and goes from two items to one.
 
-## Backend-bridge changes
+## Backend-bridge changes (doc-only)
 
-The current `templates/app/src/lib/server/api.ts` `apiFetch` reads the `wf_session` cookie from `event.cookies` and forwards it to upstream so the backend can re-authenticate against the same session store. That store is gone.
+`apiFetch` is **not** a shipped template file today — it's a pattern documented in `skills/homelab-web-backend-bridge/SKILL.md`. The cleanup updates that documented pattern; there is no `templates/app/src/lib/server/api.ts` to modify.
 
-**New posture:** SvelteKit is the auth boundary. The backend trusts any call that reaches its socket (network-isolated under invariant 1, plus the backend is internal — never client-reachable). `apiFetch` no longer takes an `event` parameter and forwards no identity headers automatically.
+**New posture:** SvelteKit is the auth boundary. The backend trusts any call that reaches its socket (network-isolated under invariant 1, plus the backend is internal — never client-reachable). The documented `apiFetch` pattern loses its `event` parameter and forwards no identity headers automatically.
+
+The skill's *before* and *after* code blocks (which apps copy when they add backend bridges):
 
 ```ts
-// before — apiFetch.ts
+// BEFORE (today's skill):
 import { error, type Cookies } from '@sveltejs/kit';
 import { SESSION_COOKIE } from './auth';
 
@@ -280,7 +281,7 @@ export async function apiFetch(path: string, init: ApiFetchOptions = {}) {
 ```
 
 ```ts
-// after — apiFetch.ts
+// AFTER (new skill content):
 import { error } from '@sveltejs/kit';
 
 type ApiFetchOptions = {
@@ -294,7 +295,7 @@ export async function apiFetch(path: string, init: ApiFetchOptions = {}) {
 }
 ```
 
-When a backend genuinely needs user identity (audit log, per-user storage scope, group-based authorization that the backend itself enforces), the route handler forwards it explicitly:
+When a backend genuinely needs user identity (audit log, per-user storage scope, group-based authorization that the backend itself enforces), the route handler in a consuming app forwards it explicitly:
 
 ```ts
 const user = requireUser(event);
@@ -305,7 +306,7 @@ await apiFetch('/api/things', {
 });
 ```
 
-`X-Internal-User` is a convention, not a kit constant. The backend treats it as audit metadata, not authorization input — authorization is enforced at the SvelteKit layer by `requireUser` + group checks.
+`X-Internal-User` is a convention taught by the skill, not a kit constant. The backend treats it as audit metadata, not authorization input — authorization is enforced at the SvelteKit layer by `requireUser` + group checks.
 
 ## Dev environment hint
 
@@ -383,14 +384,111 @@ Developers copy `.env.example` → `.env.local` (SvelteKit's default Vite setup 
 
 ## Strategy spec update
 
-`docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md`:
+`docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md` needs several coordinated edits, not just the line-248 reference. The current spec contains stub-auth scaffolding across three locations that all need to align:
 
-- Replace `requireSession()` with `requireUser()` (one occurrence, around line 248).
-- Add a brief note that the homepage/SSO project shipped as Pocket ID via Traefik+TinyAuth, and the kit consumes its `Remote-*` headers.
+### Edit 1 — Template-demonstrates list (around line 170)
+
+Change:
+```
+- Stub auth (session cookie, redirect helpers — see §"Auth Stub")
+```
+to:
+```
+- Auth via Traefik + TinyAuth + Pocket ID (see §"Auth via Traefik")
+```
+
+### Edit 2 — `homelab-web-backend-bridge` skill summary bullet (around line 215)
+
+Change:
+```
+- Auth header / session cookie passing.
+```
+to:
+```
+- Explicit identity forwarding (e.g. `X-Internal-User: user.sub`) when a backend needs identity. No automatic cookie/session forwarding — SvelteKit is the auth boundary.
+```
+
+### Edit 3 — Replace the entire `## Auth Stub (intentionally thin)` section (lines 244–258)
+
+Delete the whole section (heading + body) and replace it with:
+
+```markdown
+## Auth via Traefik
+
+The kit consumes the homelab's SSO infrastructure (Traefik → TinyAuth → Pocket ID OIDC) and ships **no** auth machinery of its own.
+
+- `hooks.server.ts` reads TinyAuth's `Remote-Sub`, `Remote-User`, `Remote-Email`, `Remote-Name`, `Remote-Groups` headers and populates `event.locals.user` with a typed `User`.
+- `requireUser(event)` and `getUser(event)` in `$lib/server/auth` are the only public helpers; both return the same `User` shape.
+- The root `+layout.server.ts` calls `requireUser` so every page in an app is gated by default.
+- Local dev: set `WRIGHT_DEV_USER` (and optionally `WRIGHT_DEV_GROUPS`) in `.env.local`. The dev fallback only fires when `dev === true`.
+
+The kit does **not** ship: a login form, a logout button, a session cookie, an OAuth client, or any password handling. All of that lives in the homelab cluster (TinyAuth + Pocket ID).
+
+Trust rests on two deployment invariants enforced in the homelab manifests: NetworkPolicy restricting Pod ingress to Traefik, and a Traefik Headers middleware that scrubs client-supplied `Remote-*` headers before ForwardAuth runs. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for the full trust-boundary write-up and the required middleware YAML.
+```
 
 ## Scan-router migration doc update
 
-`docs/migrations/scan-router.md:86` currently says "the login/settings pages should be functional via curl." Drop the login reference: the settings page (and any other `csr = false` page) stays as the no-JS proof; login isn't a page anymore.
+`docs/migrations/scan-router.md` has four stale references that all need to align with the post-cleanup world:
+
+### Edit 1 — "Out" scope bullet (lines 75–76)
+
+Change:
+```
+- Real auth. The kit's stub auth in `$lib/server/auth.ts` is enough
+  for v1; SSO comes from the homepage project later.
+```
+to:
+```
+- Custom auth. The kit consumes the homelab's Traefik + TinyAuth +
+  Pocket ID infrastructure via `event.locals.user`; scan-router
+  inherits this automatically. No app-level auth code to write.
+```
+
+(The bullet stays in the "Out" list because the meaning is the same — scan-router doesn't roll its own auth — but the framing shifts from "stub for now, real later" to "real already, inherited from the kit.")
+
+### Edit 2 — No-JS constraint bullet (lines 85–87)
+
+Change:
+```
+  The scan list, individual detail views, and
+  the login/settings pages should be functional via `curl`. Use
+  `export const csr = false` where it applies.
+```
+to:
+```
+  The scan list, individual detail views, and the settings page
+  should be functional via `curl` (with Traefik forwarding the
+  Remote-* headers). Use `export const csr = false` where it applies.
+```
+
+### Edit 3 — Suggested first step #1 (lines 105–108)
+
+Change:
+```
+1. From `~/Projects/web-ui/`, run
+   `bun run create-app ~/Projects/scan-router/web`. The scaffold drops
+   you a complete SvelteKit app with all seven recipes pre-built —
+   start from there.
+```
+to:
+```
+1. From `~/Projects/web-ui/`, run
+   `bun run create-app ~/Projects/scan-router/web`. The scaffold drops
+   you a complete SvelteKit app with all six recipes pre-built —
+   start from there.
+```
+
+### Edit 4 — Recipe-mapping intro line (line 111)
+
+Change:
+```
+   Map each Jinja page to one of the seven recipes:
+```
+to:
+```
+   Map each Jinja page to one of the six recipes:
+```
 
 ## CHANGELOG
 
