@@ -4,6 +4,8 @@
 **Status:** Approved, ready for implementation plan
 **Scope:** `templates/app/`, `skills/homelab-web-ui`, `skills/homelab-web-backend-bridge`, `docs/superpowers/specs/2026-05-14-web-ui-strategy-design.md`, `docs/migrations/scan-router.md`, `CHANGELOG.md`. Plus a separate **homelab repo issue** for the Traefik Headers middleware.
 
+> **Superseded in part by the Auth tiers follow-up** at the bottom of this file (§ "Auth tiers (follow-up — 2026-05-16)"). Several details below describe the *original* auth-cleanup shipped state — specifically: the root layout calls `requireUser`, the `+layout.server.ts` return is `{ user }`, and the AppShell foot assumes `data.user` is non-null. The follow-up changes those: the layout now calls `requireAuthorizedUser(event, authPolicy)`, the return adds `authMode`, and the foot guards on `{#if data.user}`. Read the follow-up section first for the current state.
+
 ## Problem
 
 The template ships stub cookie auth (`templates/app/src/lib/server/auth.ts`) that accepts any non-empty username/password pair. A comment at the top of the file says the stub exists "until the homepage/SSO project lands." That project has landed: every homelab app sits behind Traefik → TinyAuth → Pocket ID (OIDC). TinyAuth emits `Remote-Sub`, `Remote-User`, `Remote-Email`, `Remote-Name`, `Remote-Groups` to the backend per `k8s/infrastructure/traefik/middleware-tinyauth.yaml` in the homelab repo.

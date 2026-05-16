@@ -14,7 +14,7 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 - Stub cookie auth removed. `SESSION_COOKIE`, `Session`, `getSession`, `setSession`, `clearSession`, `requireSession`, `redirectToLogin`, and `redirectAfterLogin` are gone from `$lib/server/auth`.
 - `/login` route is removed. Traefik + TinyAuth + Pocket ID handles login at the edge.
-- New API: `requireUser(event)` / `getUser(event)`, both returning the typed `User` shape `{ sub, username, email, name, groups }`. The root `+layout.server.ts` calls `requireUser` so the whole template app is gated by default.
+- New API: `requireUser(event)` / `getUser(event)`, both returning the typed `User` shape `{ sub, username, email, name, groups }`. The root `+layout.server.ts` enforces the app-local `authPolicy` (see the Added entry above) via `requireAuthorizedUser`; the default `mode: 'authenticated'` keeps the whole template app gated by default, equivalent to calling `requireUser` directly.
 - `apiFetch` (as documented in the `homelab-web-backend-bridge` skill) no longer takes an `event` parameter or forwards a session cookie. Forward identity explicitly when a backend needs it: `headers: { 'X-Internal-User': user.sub }`.
 - Deployment requires the `scrub-identity-headers` Traefik middleware chained ahead of `tinyauth-forward-auth` in every app's IngressRoute, plus a NetworkPolicy restricting Pod ingress to Traefik. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for the trust-boundary details and the middleware YAML.
 - Local dev: copy `templates/app/.env.example` to `.env.local` and set `WRIGHT_DEV_USER=<name>` (optionally `WRIGHT_DEV_GROUPS=<csv>`).
