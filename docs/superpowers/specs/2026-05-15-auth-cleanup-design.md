@@ -559,3 +559,56 @@ Per `~/.claude/CLAUDE.md` ("Project Agents should not make changes in `~/Project
 - A second-level `requireGroup('admins')` helper if group-gated routes proliferate.
 - An HMAC-signed identity header from TinyAuth — only if invariant 1 or 2 can no longer be guaranteed.
 - Scaffolder support for substituting the template's hard-coded `'Template'` literal into the new app's display name (pre-existing concern flagged in the AppShell version-display review).
+
+## Auth tiers (follow-up — 2026-05-16)
+
+The original cleanup above implemented two things: (1) header-based trust of Traefik's forwarded identity, and (2) authentication enforcement via `requireUser` in the root layout. It did not give apps a way to declare app-specific *authorization* policy beyond "any authenticated user."
+
+This follow-up adds an explicit policy layer with three tiers.
+
+### Tiers
+
+| Tier | When to use | Layout posture |
+|---|---|---|
+| `none` | Internal/low-risk app. Identity headers may still arrive from Traefik but the app does not require them. Missing identity renders normally. | `data.user` is `User \| null`; foot falls back to "Internal / No auth". |
+| `authenticated` (default) | Any valid Pocket ID user may use the app. Same as the post-cleanup behavior. | `data.user` is always present after the load runs (load throws 401 otherwise). |
+| `authorized` | Only explicitly allowed users / groups / subject IDs may use the app. | `data.user` is always present. Failed authz returns 403; missing identity returns 401. |
+
+### API
+
+```ts
+// $lib/server/auth — appended to the existing User / getUser / requireUser.
+export type AuthMode = 'none' | 'authenticated' | 'authorized';
+
+export type AuthPolicy = {
+  mode: AuthMode;
+  allowedGroups?: string[];
+  allowedUsers?: string[];
+  allowedSubs?: string[];
+};
+
+export function authorizeUser(user: User | null, policy: AuthPolicy): User | null;
+export function requireAuthorizedUser(event: RequestEvent, policy: AuthPolicy): User | null;
+```
+
+`authorizeUser` is the policy engine; `requireAuthorizedUser` is a thin convenience that reads `event.locals.user` and calls it. Both return `User | null` because `mode: 'none'` legitimately produces `null`.
+
+### Behavior contract
+
+- **`mode: 'none'`** — `authorizeUser(null, ...)` returns `null`; `authorizeUser(user, ...)` returns `user`. Never throws.
+- **`mode: 'authenticated'`** — missing user throws 401. Any present user passes.
+- **`mode: 'authorized'`** — missing user throws 401. With no allowlist arrays configured (all three empty/undefined), fail closed → 403. Otherwise user passes if `user.sub` is in `allowedSubs`, `user.username` is in `allowedUsers`, or any `user.groups` entry is in `allowedGroups`. Non-matching user → 403.
+
+### Policy lives app-local, not in the kit
+
+The policy file at `templates/app/src/lib/server/auth-policy.ts` is part of the scaffold. Apps edit it post-scaffold to pick their tier and (for `'authorized'`) name their allowlist. The kit does NOT host policy — policy is app-specific configuration, not UI-kit behavior.
+
+The kit ships the default `mode: 'authenticated'` so a fresh scaffold behaves like the post-cleanup state with zero edits.
+
+### Why not env-driven
+
+Considered and rejected for v1: policy via environment variables. A typed app-local file earns its place better because (a) the policy is naturally code-shaped (string arrays, modes), (b) it's reviewed in PRs alongside the app it gates, and (c) changes to it are immediately visible in `git log` for that app's repo. Env-driven policy would shift the trust surface to deployment config without obvious gain.
+
+### Trust boundary unchanged
+
+This follow-up does not weaken the Traefik scrub-headers rollout gate (homelab issue #645). The policy layer trusts `event.locals.user`, which is still populated only from Traefik-forwarded headers (or the dev fallback). NetworkPolicy + scrub middleware remain the actual security boundary.
