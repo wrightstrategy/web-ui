@@ -83,11 +83,6 @@
     </nav>
     {#if foot || meta}
       <div class="wf-foot" class:has-meta={!!meta}>
-        {#if foot && meta}
-          <div class="wf-foot-row">{@render foot()}</div>
-        {:else if foot}
-          {@render foot()}
-        {/if}
         {#if meta}
           <div class="wf-version-block">
             <div class="wf-version-name">{meta.name}</div>
@@ -96,6 +91,11 @@
             {/if}
             <div class="wf-version-kit">ui v{KIT_VERSION}</div>
           </div>
+        {/if}
+        {#if foot && meta}
+          <div class="wf-foot-row">{@render foot()}</div>
+        {:else if foot}
+          {@render foot()}
         {/if}
       </div>
     {/if}

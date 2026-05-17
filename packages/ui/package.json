@@ -1,6 +1,6 @@
 {
   "name": "@wright/ui",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "Wright Family shared UI kit — semantic tokens, Svelte 5 components, brand marks.",
