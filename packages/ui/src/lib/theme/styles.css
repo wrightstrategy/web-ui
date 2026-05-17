@@ -122,7 +122,7 @@
   width: 2px; background: var(--accent); border-radius: 2px;
 }
 .wf-sidebar .wf-foot {
-  padding: 12px 20px 0;
+  padding: 12px 20px;
   border-top: 1px solid var(--border);
   margin-top: 8px;
   display: flex;
@@ -131,20 +131,17 @@
   font-size: 12px;
   color: var(--text-muted);
 }
-.wf-sidebar .wf-foot.has-meta {
-  flex-direction: column;
-  align-items: stretch;
-  padding-bottom: 16px;
-}
-.wf-sidebar .wf-foot-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
 .wf-sidebar .wf-version-block {
+  padding: 8px 20px 12px;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
   line-height: 1.15;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.wf-sidebar .wf-version-block + .wf-foot {
+  margin-top: 0;
 }
 .wf-sidebar .wf-version-block .wf-version-name {
   white-space: nowrap;

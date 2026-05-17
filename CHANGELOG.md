@@ -19,6 +19,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Deployment requires the `scrub-identity-headers` Traefik middleware chained ahead of `tinyauth-forward-auth` in every app's IngressRoute, plus a NetworkPolicy restricting Pod ingress to Traefik. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for the trust-boundary details and the middleware YAML.
 - Local dev: copy `templates/app/.env.example` to `.env.local` and set `WRIGHT_DEV_USER=<name>` (optionally `WRIGHT_DEV_GROUPS=<csv>`).
 
+## [1.0.3] — 2026-05-17
+
+### Fixed
+
+- `AppShell` sidebar foot: 1.0.2 moved the version block above the user row but kept it inside `wf-foot`, so it still rendered _below_ the divider line. Promoted the version block to a direct child of `wf-sidebar` (sibling of `wf-foot`) so the `border-top` on `wf-foot` now sits between the version metadata and the user row, which is what the original report was asking for.
+- CSS cleanup: removed `wf-foot.has-meta` and `wf-foot-row` rules (both unused once the version block moved out). The standalone `wf-version-block` picks up the typography (`12px / text-muted`) and horizontal padding (`20px`) that `wf-foot` used to provide.
+
 ## [1.0.2] — 2026-05-16
 
 ### Fixed
@@ -156,6 +163,7 @@ server-rendered empty state via curl alone).
   5's `state_referenced_locally` false-positive on the Superforms
   `superForm(data.form, ...)` initialization pattern. Not blocking.
 
+[1.0.3]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.3
 [1.0.2]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.2
 [1.0.1]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.1
 [1.0.0]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.0
