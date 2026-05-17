@@ -19,6 +19,18 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - Deployment requires the `scrub-identity-headers` Traefik middleware chained ahead of `tinyauth-forward-auth` in every app's IngressRoute, plus a NetworkPolicy restricting Pod ingress to Traefik. See `docs/superpowers/specs/2026-05-15-auth-cleanup-design.md` for the trust-boundary details and the middleware YAML.
 - Local dev: copy `templates/app/.env.example` to `.env.local` and set `WRIGHT_DEV_USER=<name>` (optionally `WRIGHT_DEV_GROUPS=<csv>`).
 
+## [1.0.2] — 2026-05-16
+
+### Fixed
+
+- `AppShell` sidebar foot: the version block (app name / version / `ui v<KIT_VERSION>`) rendered below the user row, where it read as an orphan trailing line outside the framed foot region. Swapped the render order so the version block sits above the user row, both inside the same bordered `wf-foot` block.
+
+## [1.0.1] — 2026-05-16
+
+### Fixed
+
+- `AppShell` version display. v1.0.0 tagged with `"version": "0.0.0"` in both `packages/ui/package.json` and the workspace root, so the sidebar rendered `ui v0.0.0` for every consumer. v1.0.0 also predated the `meta` prop on `AppShell` (added in `f6b23c2`), so consumers pinned to v1.0.0 got no version block at all. Cut v1.0.1 at HEAD rather than force-moving the v1.0.0 tag — the v1.0.0..HEAD range also includes the mobile version strip and foot-only fixes that downstream apps need.
+
 ## [1.0.0] — 2026-05-14
 
 First usable release. The loop is closed: design tokens → kit components
@@ -144,4 +156,6 @@ server-rendered empty state via curl alone).
   5's `state_referenced_locally` false-positive on the Superforms
   `superForm(data.form, ...)` initialization pattern. Not blocking.
 
+[1.0.2]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.2
+[1.0.1]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.1
 [1.0.0]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.0
