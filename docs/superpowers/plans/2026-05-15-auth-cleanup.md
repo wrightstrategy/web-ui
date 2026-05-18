@@ -1298,4 +1298,4 @@ Documented in the spec's "Non-goals" and "Future follow-ups" sections. Do not ad
 - A JS test runner. Verification is `bun run check` + `bun run build` + curl probes.
 - Any changes to the homelab repo's manifests from this plan. The middleware lands via the Forgejo issue filed in Task 1.
 
-<!-- Filed homelab issue: https://git.txsww.com/scott/homelab/issues/645 -->
+<!-- Filed homelab issue: https://github.com/wrightstrategy/homelab/issues/645 -->

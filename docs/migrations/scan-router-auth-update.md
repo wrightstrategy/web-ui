@@ -20,7 +20,7 @@ the kit, and needs to catch up.
 
 **Rollout gate:** scan-router must not run in production with the new
 auth code until homelab Forgejo issue
-[#645](https://git.txsww.com/scott/homelab/issues/645)
+[#645](https://github.com/wrightstrategy/homelab/issues/645)
 (`scrub-identity-headers` Traefik middleware) is closed and the
 middleware is live in scan-router's IngressRoute. Local dev works
 regardless because the dev fallback uses `WRIGHT_DEV_USER`.
