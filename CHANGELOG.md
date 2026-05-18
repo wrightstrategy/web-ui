@@ -163,7 +163,7 @@ server-rendered empty state via curl alone).
   5's `state_referenced_locally` false-positive on the Superforms
   `superForm(data.form, ...)` initialization pattern. Not blocking.
 
-[1.0.3]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.3
-[1.0.2]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.2
-[1.0.1]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.1
-[1.0.0]: https://git.txsww.com/scott/web-ui/releases/tag/v1.0.0
+[1.0.3]: https://github.com/wrightstrategy/web-ui/releases/tag/v1.0.3
+[1.0.2]: https://github.com/wrightstrategy/web-ui/releases/tag/v1.0.2
+[1.0.1]: https://github.com/wrightstrategy/web-ui/releases/tag/v1.0.1
+[1.0.0]: https://github.com/wrightstrategy/web-ui/releases/tag/v1.0.0
