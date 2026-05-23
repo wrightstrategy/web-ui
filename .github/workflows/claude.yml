@@ -1,1 +1,50 @@
-404: Not Found
+name: Claude Code
+
+# Per-repo stub. Drop this into each repo at .github/workflows/claude.yml.
+# All real logic lives in wrightstrategy/.github (private reusable workflow).
+# The `on:` triggers MUST live here (reusable workflows can't define their own).
+#
+# IMPORTANT: This repo MUST have a REPO-LEVEL secret named CLAUDE_CODE_OAUTH_TOKEN.
+# Org-level secrets do NOT flow through the reusable-workflow boundary in this
+# setup, regardless of visibility (`selected` or `all`) or allowlist contents —
+# verified empirically across multiple iterations. The repo-level secret is
+# the only path that works. The matching `workflow_call.secrets` declaration
+# in the reusable workflow forces this explicit pass-through.
+#
+# Set the secret via:
+#   echo "$TOKEN" | gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo wrightstrategy/<repo>
+# Rotation: re-run `claude setup-token`, then re-set on every repo with the stub.
+
+on:
+  issues:
+    # `opened` lets a user trigger Claude by including @claude in the initial
+    # issue body or title — no separate comment needed.
+    # `labeled` is the on-switch for the claude/bug/enhancement label paths.
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  agent:
+    uses: wrightstrategy/.github/.github/workflows/claude.yml@main
+    # Required: GitHub enforces caller-permissions >= called-workflow permissions.
+    # Without this block, the org default (read-only) wins and the run fails at
+    # workflow resolution with startup_failure + zero jobs created.
+    # `id-token: write` specifically is required for claude-code-action's
+    # internal OIDC handshake with the Anthropic API — without it the action
+    # fails with "Unable to get ACTIONS_ID_TOKEN_REQUEST_URL env variable".
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: read
+      id-token: write
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    # Optional per-repo model override, e.g. pin Opus on a specific repo:
+    # with:
+    #   model: "claude-opus-4-7"
