@@ -4,15 +4,19 @@ name: Claude Code
 # All real logic lives in wrightstrategy/.github (private reusable workflow).
 # The `on:` triggers MUST live here (reusable workflows can't define their own).
 #
-# Secrets used (both org-level, scoped to selected repos that have this stub):
+# Secrets used (all org-level, visibility: all):
 #   CLAUDE_CODE_OAUTH_TOKEN — Anthropic auth (rotate via `claude setup-token`).
-#   CLAUDE_WORKFLOWS_PAT    — fine-grained PAT with Workflows: Read & write,
-#                             so Claude can push changes that touch
-#                             `.github/workflows/*`. Required because the
-#                             default GITHUB_TOKEN cannot carry workflows:write
-#                             even when the Claude GitHub App has it granted.
+#   BOT_APP_ID              — App ID of the `wrightstrategy-claude-bot` GitHub
+#                             App.
+#   BOT_APP_PRIVATE_KEY     — PEM private key for the same App. The reusable
+#                             workflow uses these to mint a short-lived
+#                             installation token with workflows:write
+#                             permission, posted under the bot's identity (not
+#                             the human triggering the run) — needed so the
+#                             bot's own status comments don't self-cancel the
+#                             in-flight Claude run.
 #
-# Both flow through to the reusable workflow via the explicit `secrets:` block
+# All flow through to the reusable workflow via the explicit `secrets:` block
 # below. `secrets: inherit` is intentionally NOT used — explicit forwarding is
 # the most robust pattern across plan tiers and visibility configurations.
 
@@ -46,7 +50,8 @@ jobs:
       id-token: write
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-      CLAUDE_WORKFLOWS_PAT: ${{ secrets.CLAUDE_WORKFLOWS_PAT }}
+      BOT_APP_ID: ${{ secrets.BOT_APP_ID }}
+      BOT_APP_PRIVATE_KEY: ${{ secrets.BOT_APP_PRIVATE_KEY }}
     # Optional per-repo model override, e.g. pin Opus on a specific repo:
     # with:
     #   model: "claude-opus-4-7"
