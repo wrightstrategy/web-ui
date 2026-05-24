@@ -4,16 +4,17 @@ name: Claude Code
 # All real logic lives in wrightstrategy/.github (private reusable workflow).
 # The `on:` triggers MUST live here (reusable workflows can't define their own).
 #
-# IMPORTANT: This repo MUST have a REPO-LEVEL secret named CLAUDE_CODE_OAUTH_TOKEN.
-# Org-level secrets do NOT flow through the reusable-workflow boundary in this
-# setup, regardless of visibility (`selected` or `all`) or allowlist contents —
-# verified empirically across multiple iterations. The repo-level secret is
-# the only path that works. The matching `workflow_call.secrets` declaration
-# in the reusable workflow forces this explicit pass-through.
+# Secrets used (both org-level, scoped to selected repos that have this stub):
+#   CLAUDE_CODE_OAUTH_TOKEN — Anthropic auth (rotate via `claude setup-token`).
+#   CLAUDE_WORKFLOWS_PAT    — fine-grained PAT with Workflows: Read & write,
+#                             so Claude can push changes that touch
+#                             `.github/workflows/*`. Required because the
+#                             default GITHUB_TOKEN cannot carry workflows:write
+#                             even when the Claude GitHub App has it granted.
 #
-# Set the secret via:
-#   echo "$TOKEN" | gh secret set CLAUDE_CODE_OAUTH_TOKEN --repo wrightstrategy/<repo>
-# Rotation: re-run `claude setup-token`, then re-set on every repo with the stub.
+# Both flow through to the reusable workflow via the explicit `secrets:` block
+# below. `secrets: inherit` is intentionally NOT used — explicit forwarding is
+# the most robust pattern across plan tiers and visibility configurations.
 
 on:
   issues:
@@ -45,6 +46,7 @@ jobs:
       id-token: write
     secrets:
       CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_WORKFLOWS_PAT: ${{ secrets.CLAUDE_WORKFLOWS_PAT }}
     # Optional per-repo model override, e.g. pin Opus on a specific repo:
     # with:
     #   model: "claude-opus-4-7"
